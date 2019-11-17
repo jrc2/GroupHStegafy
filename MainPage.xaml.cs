@@ -1,93 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Storage.Streams;
-using Windows.UI;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Imaging;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
+using GroupHStegafy.Controllers;
 
 namespace GroupHStegafy
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    ///     An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage
     {
-
-        private double dpiX;
-        private double dpiY;
-        private WriteableBitmap modifiedImage;
+        private readonly ImageManager imageEditor;
 
         public MainPage()
         {
             this.InitializeComponent();
 
-            this.modifiedImage = null;
-            this.dpiX = 0;
-            this.dpiY = 0;
+            this.imageEditor = new ImageManager();
         }
 
         private async void openButton_Click(object sender, RoutedEventArgs e)
         {
-            var sourceImageFile = await this.selectSourceImageFile();
-            var copyBitmapImage = await this.MakeACopyOfTheFileToWorkOn(sourceImageFile);
-
-            using (var fileStream = await sourceImageFile.OpenAsync(FileAccessMode.Read))
+            var sourceImageFile = await selectSourceImageFile();
+            if (sourceImageFile == null)
             {
-                var decoder = await BitmapDecoder.CreateAsync(fileStream);
-                var transform = new BitmapTransform
-                {
-                    ScaledWidth = Convert.ToUInt32(copyBitmapImage.PixelWidth),
-                    ScaledHeight = Convert.ToUInt32(copyBitmapImage.PixelHeight)
-                };
-
-                this.dpiX = decoder.DpiX;
-                this.dpiY = decoder.DpiY;
-
-                var pixelData = await decoder.GetPixelDataAsync(
-                    BitmapPixelFormat.Bgra8,
-                    BitmapAlphaMode.Straight,
-                    transform,
-                    ExifOrientationMode.IgnoreExifOrientation,
-                    ColorManagementMode.DoNotColorManage
-                );
-
-                var sourcePixels = pixelData.DetachPixelData();
-
-                this.giveImageRedTint(sourcePixels, decoder.PixelWidth, decoder.PixelHeight);
-
-                this.modifiedImage = new WriteableBitmap((int)decoder.PixelWidth, (int)decoder.PixelHeight);
-                using (var writeStream = this.modifiedImage.PixelBuffer.AsStream())
-                {
-                    await writeStream.WriteAsync(sourcePixels, 0, sourcePixels.Length);
-                    this.imageDisplay.Source = this.modifiedImage;
-                }
+                return;
             }
+
+            await this.imageEditor.ReadImage(sourceImageFile);
+
+            this.imageDisplay.Source = this.imageEditor.OriginalImage;
         }
 
-        private void giveImageRedTint(byte[] sourcePixels, uint imageWidth, uint imageHeight)
-        {
-            for (var i = 0; i < imageHeight; i++)
-            {
-                for (var j = 0; j < imageWidth; j++)
-                {
-                    var pixelColor = this.GetPixelBgra8(sourcePixels, i, j, imageWidth, imageHeight);
-
-                    pixelColor.R = 255;
-
-                    this.SetPixelBgra8(sourcePixels, i, j, pixelColor, imageWidth, imageHeight);
-                }
-            }
-        }
-
-        private async Task<StorageFile> selectSourceImageFile()
+        private static async Task<StorageFile> selectSourceImageFile()
         {
             var openPicker = new FileOpenPicker
             {
@@ -103,37 +51,21 @@ namespace GroupHStegafy
             return file;
         }
 
-        private async Task<BitmapImage> MakeACopyOfTheFileToWorkOn(StorageFile imageFile)
+        private async void saveButton_Click(object sender, RoutedEventArgs e)
         {
-            IRandomAccessStream inputstream = await imageFile.OpenReadAsync();
-            var newImage = new BitmapImage();
-            newImage.SetSource(inputstream);
-            return newImage;
+            if (this.imageEditor.ModifiedImage == null)
+            {
+                return;
+            }
+
+            var saveFile = await selectSaveFile();
+            if (saveFile != null)
+            {
+                await this.imageEditor.SaveImage(saveFile);
+            }
         }
 
-        public Color GetPixelBgra8(byte[] pixels, int x, int y, uint width, uint height)
-        {
-            var offset = (x * (int)width + y) * 4;
-            var r = pixels[offset + 2];
-            var g = pixels[offset + 1];
-            var b = pixels[offset + 0];
-            return Color.FromArgb(0, r, g, b);
-        }
-
-        public void SetPixelBgra8(byte[] pixels, int x, int y, Color color, uint width, uint height)
-        {
-            var offset = (x * (int)width + y) * 4;
-            pixels[offset + 2] = color.R;
-            pixels[offset + 1] = color.G;
-            pixels[offset + 0] = color.B;
-        }
-
-        private void saveButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.saveWritableBitmap();
-        }
-
-        private async void saveWritableBitmap()
+        private static async Task<StorageFile> selectSaveFile()
         {
             var fileSavePicker = new FileSavePicker
             {
@@ -141,24 +73,10 @@ namespace GroupHStegafy
                 SuggestedFileName = "image"
             };
             fileSavePicker.FileTypeChoices.Add("PNG files", new List<string> { ".png" });
-            var savefile = await fileSavePicker.PickSaveFileAsync();
 
-            if (savefile != null)
-            {
-                var stream = await savefile.OpenAsync(FileAccessMode.ReadWrite);
-                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
+            var saveFile = await fileSavePicker.PickSaveFileAsync();
 
-                var pixelStream = this.modifiedImage.PixelBuffer.AsStream();
-                var pixels = new byte[pixelStream.Length];
-                await pixelStream.ReadAsync(pixels, 0, pixels.Length);
-
-                encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore,
-                    (uint)this.modifiedImage.PixelWidth,
-                    (uint)this.modifiedImage.PixelHeight, this.dpiX, this.dpiY, pixels);
-                await encoder.FlushAsync();
-
-                stream.Dispose();
-            }
+            return saveFile;
         }
     }
 }
