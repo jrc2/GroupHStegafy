@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using GroupHStegafy.Controllers;
 
@@ -13,26 +15,90 @@ namespace GroupHStegafy
     /// </summary>
     public sealed partial class MainPage
     {
-        private readonly ImageManager imageEditor;
+        private static readonly double ApplicationHeight = (double)Application.Current.Resources["AppHeight"];
+        private static readonly double ApplicationWidth = (double)Application.Current.Resources["AppWidth"];
+
+        private readonly ImageManager imageManager;
 
         public MainPage()
         {
             this.InitializeComponent();
 
-            this.imageEditor = new ImageManager();
+            ApplicationView.PreferredLaunchViewSize = new Size { Width = ApplicationWidth, Height = ApplicationHeight };
+            ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
+            ApplicationView.GetForCurrentView()
+                           .SetPreferredMinSize(new Size(ApplicationWidth, ApplicationHeight));
+
+            this.imageManager = new ImageManager();
         }
 
-        private async void openButton_Click(object sender, RoutedEventArgs e)
+        private async void openOriginalImageButton_Click(object sender, RoutedEventArgs e)
         {
+            if (this.imageManager.ModifiedImage != null)
+            {
+                return;
+            }
+
             var sourceImageFile = await selectSourceImageFile();
             if (sourceImageFile == null)
             {
                 return;
             }
 
-            await this.imageEditor.ReadImage(sourceImageFile);
+            await this.imageManager.ReadOriginalImage(sourceImageFile);
+            this.originalImageDisplay.Source = this.imageManager.OriginalImage;
 
-            this.imageDisplay.Source = this.imageEditor.OriginalImage;
+            if (this.imageManager.SecretImage != null)
+            {
+                this.imageManager.EmbedSecretImage();
+                this.modifiedImageDisplay.Source = this.imageManager.ModifiedImage;
+            }
+
+            this.openSecretImageButton.IsEnabled = true;
+            this.openModifiedImageButton.IsEnabled = false;
+        }
+
+        private async void openModifiedImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.imageManager.OriginalImage != null)
+            {
+                return;
+            }
+
+            var sourceImageFile = await selectSourceImageFile();
+            if (sourceImageFile == null)
+            {
+                return;
+            }
+
+            await this.imageManager.ReadModifiedImage(sourceImageFile);
+            this.modifiedImageDisplay.Source = this.imageManager.ModifiedImage;
+            this.imageManager.ExtractSecretImage();
+            this.secretImageDisplay.Source = this.imageManager.SecretImage;
+
+            this.openOriginalImageButton.IsEnabled = false;
+            this.saveButton.IsEnabled = true;
+        }
+
+        private async void openSecretImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.imageManager.OriginalImage == null)
+            {
+                return;
+            }
+
+            var sourceImageFile = await selectSourceImageFile();
+            if (sourceImageFile == null)
+            {
+                return;
+            }
+
+            await this.imageManager.ReadSecretImage(sourceImageFile);
+            this.secretImageDisplay.Source = this.imageManager.SecretImage;
+            this.imageManager.EmbedSecretImage();
+            this.modifiedImageDisplay.Source = this.imageManager.ModifiedImage;
+
+            this.saveButton.IsEnabled = true;
         }
 
         private static async Task<StorageFile> selectSourceImageFile()
@@ -53,7 +119,7 @@ namespace GroupHStegafy
 
         private async void saveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.imageEditor.ModifiedImage == null)
+            if (this.imageManager.ModifiedImage == null)
             {
                 return;
             }
@@ -61,7 +127,7 @@ namespace GroupHStegafy
             var saveFile = await selectSaveFile();
             if (saveFile != null)
             {
-                await this.imageEditor.SaveImage(saveFile);
+                await this.imageManager.SaveImage(saveFile);
             }
         }
 
