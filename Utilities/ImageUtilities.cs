@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 using GroupHStegafy.Model;
 
 namespace GroupHStegafy.Utilities
@@ -11,7 +12,7 @@ namespace GroupHStegafy.Utilities
     {
         private const PixelColor LeastSignificantPixelColor = PixelColor.Blue;
         private const int LeastSignificantBitInByte = 7;
-        private const int BytesPerPixel = 3;
+        private const int BytesPerPixel = 4;
 
         /// <summary>
         ///     Replaces the last bit of every third byte in originalBytes
@@ -23,14 +24,16 @@ namespace GroupHStegafy.Utilities
         public static byte[] ReplaceLeastSignificantBit(byte[] originalBytes, BitArray newBits)
         {
             //TODO: Correctly implement
-            if (newBits.Length * BytesPerPixel > originalBytes.Length)
+            if (newBits.Length > originalBytes.Length * 8)
             {
                 throw new ArgumentException("Not Enough Bytes in originalBytes");
             }
 
             for (var i = 0; i < newBits.Length - 1; i++)
             {
+                Debug.WriteLine(originalBytes[i * BytesPerPixel].ToString());
                 originalBytes[i * BytesPerPixel] = replaceInsignificantBit(originalBytes[i * BytesPerPixel], newBits[i]);
+                Debug.WriteLine(originalBytes[i * BytesPerPixel].ToString());
             }
 
             return originalBytes;
@@ -50,13 +53,14 @@ namespace GroupHStegafy.Utilities
                 throw new ArgumentException("Invalid Byte Array");
             }
 
-            var bitArray = new BitArray(bytes.Length / BytesPerPixel);
-            for (var i = 0; i < bytes.Length; i++)
+            var leastSignificantBits = new bool[bytes.Length];
+            for (var i = 0; i < bytes.Length - 1; i+=BytesPerPixel)
             {
-                bitArray[i] = new BitArray(bytes[i * BytesPerPixel - pixelColorByteOffset(LeastSignificantPixelColor)])[LeastSignificantBitInByte];
+                leastSignificantBits[i] = 
+                    convertByteToBoolArray(bytes[i + pixelColorByteOffset(LeastSignificantPixelColor)])[LeastSignificantBitInByte];
             }
 
-            return BitArrayToByteArray(bitArray);
+            return getInsignificantByteArray(leastSignificantBits);
         }
 
         private static byte replaceInsignificantBit(byte aByte, bool bit)
@@ -66,70 +70,22 @@ namespace GroupHStegafy.Utilities
             return convertBoolArrayToByte(boolArray);
         }
 
-        private static byte bitArrayToByte(BitArray bits)
-        {
-            if (bits.Length != 8)
-            {
-                throw new ArgumentException("Incorrect number of bits.");
-            }
-
-            var bytes = new byte[1];
-            bits.CopyTo(bytes, 0);
-            return bytes[0];
-        }
-
-        /// <summary>
-        ///     Converts an Array of Bits to an Array of Bytes.
-        /// </summary>
-        /// <param name="bits">The bits.</param>
-        /// <returns>An Array of Bytes.</returns>
-        /// <exception cref="ArgumentException">Invalid BitArray</exception>
-        public static byte[] BitArrayToByteArray(BitArray bits)
-        {
-            if (bits.Length % 8 != 0)
-            {
-                throw new ArgumentException("Invalid BitArray");
-            }
-
-            var bytes = new byte[bits.Length / 8];
-            for (var i = 0; i < bytes.Length; i++)
-            {
-                var currentByteBitArray = new bool[8];
-                for (var j = 0; j < 8; j++)
-                {
-                    currentByteBitArray[j] = bits[i * 8 + j];
-                }
-
-                bytes[i] = convertBoolArrayToByte(currentByteBitArray);
-            }
-
-            return bytes;
-        }
-
-        private static int pixelColorByteOffset(PixelColor color)
-        {
-            return color switch {
-                PixelColor.Blue => 0,
-                PixelColor.Green => 1,
-                PixelColor.Red => 2,
-                _ => throw new ArgumentOutOfRangeException(nameof(color), color, "Invalid Color.")
-            };
-        }
-
         private static byte convertBoolArrayToByte(bool[] boolArray)
         {
-            if (boolArray.Length > 8)
+            if (boolArray.Length != 8)
             {
                 throw new ArgumentException("Invalid bool array.");
             }
 
             byte result = 0;
-            var index = 8 - boolArray.Length;
+            var index = 0;
 
             foreach (var bit in boolArray)
             {
                 if (bit)
+                {
                     result |= (byte)(1 << (7 - index));
+                }
 
                 index++;
             }
@@ -148,6 +104,49 @@ namespace GroupHStegafy.Utilities
             Array.Reverse(result);
 
             return result;
+        }
+
+        private static byte[] getInsignificantByteArray(bool[] insignificantBits)
+        {
+            var bytes = new byte[insignificantBits.Length];
+            for (var i = 0; i < insignificantBits.Length - 1; i+=BytesPerPixel)
+            {
+                var newBoolArray = new bool[8];
+                for (var j = 0; j < 8; j++)
+                {
+                    newBoolArray[j] = insignificantBits[i / BytesPerPixel];
+                }
+
+                bytes[  i  ] = convertBoolArrayToByte(newBoolArray);
+                bytes[i + 1] = convertBoolArrayToByte(newBoolArray);
+                bytes[i + 2] = convertBoolArrayToByte(newBoolArray);
+                bytes[i + 3] = getAlphaByte();
+            }
+
+            return bytes;
+        }
+
+        private static byte getAlphaByte()
+        {
+            var newBoolArray = new bool[8];
+
+            for (var i = 0; i < 8; i++)
+            {
+                newBoolArray[i] = true;
+            }
+
+            return convertBoolArrayToByte(newBoolArray);
+        }
+
+        private static int pixelColorByteOffset(PixelColor color)
+        {
+            return color switch
+            {
+                PixelColor.Blue => 0,
+                PixelColor.Green => 1,
+                PixelColor.Red => 2,
+                _ => throw new ArgumentOutOfRangeException(nameof(color), color, "Invalid Color.")
+            };
         }
     }
 }
