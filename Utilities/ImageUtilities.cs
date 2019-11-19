@@ -28,9 +28,9 @@ namespace GroupHStegafy.Utilities
                 throw new ArgumentException("Not Enough Bytes in originalBytes");
             }
 
-            for (var i = 0; i < originalBytes.Length - 1; i += BytesPerPixel)
+            for (var i = 0; i < newBits.Length - 1; i++)
             {
-                originalBytes[i] = replaceInsignificantBit(originalBytes[i], newBits[i / BytesPerPixel]);
+                originalBytes[i * BytesPerPixel] = replaceInsignificantBit(originalBytes[i * BytesPerPixel], newBits[i]);
             }
 
             return originalBytes;
@@ -61,7 +61,9 @@ namespace GroupHStegafy.Utilities
 
         private static byte replaceInsignificantBit(byte aByte, bool bit)
         {
-            return bitArrayToByte(new BitArray(aByte) { [LeastSignificantBitInByte] = bit });
+            var boolArray = convertByteToBoolArray(aByte);
+            boolArray[LeastSignificantBitInByte] = bit;
+            return convertBoolArrayToByte(boolArray);
         }
 
         private static byte bitArrayToByte(BitArray bits)
@@ -92,13 +94,13 @@ namespace GroupHStegafy.Utilities
             var bytes = new byte[bits.Length / 8];
             for (var i = 0; i < bytes.Length; i++)
             {
-                var currentByteBitArray = new BitArray(8);
+                var currentByteBitArray = new bool[8];
                 for (var j = 0; j < 8; j++)
                 {
                     currentByteBitArray[j] = bits[i * 8 + j];
                 }
 
-                bytes[i] = bitArrayToByte(currentByteBitArray);
+                bytes[i] = convertBoolArrayToByte(currentByteBitArray);
             }
 
             return bytes;
@@ -112,6 +114,40 @@ namespace GroupHStegafy.Utilities
                 PixelColor.Red => 2,
                 _ => throw new ArgumentOutOfRangeException(nameof(color), color, "Invalid Color.")
             };
+        }
+
+        private static byte convertBoolArrayToByte(bool[] boolArray)
+        {
+            if (boolArray.Length > 8)
+            {
+                throw new ArgumentException("Invalid bool array.");
+            }
+
+            byte result = 0;
+            var index = 8 - boolArray.Length;
+
+            foreach (var bit in boolArray)
+            {
+                if (bit)
+                    result |= (byte)(1 << (7 - index));
+
+                index++;
+            }
+
+            return result;
+        }
+
+        private static bool[] convertByteToBoolArray(byte aByte)
+        {
+            var result = new bool[8];
+
+            for (var i = 0; i < 8; i++)
+            {
+                result[i] = (aByte & (1 << i)) != 0;
+            }
+            Array.Reverse(result);
+
+            return result;
         }
     }
 }
