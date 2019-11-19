@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
+using GroupHStegafy.Utilities;
 
 namespace GroupHStegafy.Controllers
 {
@@ -28,6 +30,9 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public WriteableBitmap ModifiedImage;
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ImageManager"/> class.
+        /// </summary>
         public ImageManager()
         {
             this.OriginalImage = null;
@@ -35,16 +40,28 @@ namespace GroupHStegafy.Controllers
             this.ModifiedImage = null;
         }
 
+        /// <summary>
+        ///     Reads the original image.
+        /// </summary>
+        /// <param name="sourceImageFile">The source image file.</param>
         public async Task ReadOriginalImage(StorageFile sourceImageFile)
         {
             this.OriginalImage = await this.readImage(sourceImageFile);
         }
 
+        /// <summary>
+        ///     Reads the secret image.
+        /// </summary>
+        /// <param name="sourceImageFile">The source image file.</param>
         public async Task ReadSecretImage(StorageFile sourceImageFile)
         {
             this.SecretImage = await this.readImage(sourceImageFile);
         }
 
+        /// <summary>
+        ///     Reads the modified image.
+        /// </summary>
+        /// <param name="sourStorageFile">The sour storage file.</param>
         public async Task ReadModifiedImage(StorageFile sourStorageFile)
         {
             this.ModifiedImage = await this.readImage(sourStorageFile);
@@ -88,21 +105,38 @@ namespace GroupHStegafy.Controllers
         /// <summary>
         ///     Embeds the secret image in the OriginalImage.
         /// </summary>
-        public void EmbedSecretImage()
+        public async Task EmbedSecretImage()
         {
-            //TODO: Implement
-            this.ModifiedImage = this.OriginalImage;
+            var secretMessageData = await this.getImageData(this.SecretImage);
+            var originalImageData = await this.getImageData(this.OriginalImage);
+
+            var modifiedImageData =
+                ImageUtilities.ReplaceLeastSignificantBit(originalImageData, new BitArray(secretMessageData));
+
+            this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
+
+            using var writeStream = this.ModifiedImage.PixelBuffer.AsStream();
+            await writeStream.WriteAsync(modifiedImageData, 0, modifiedImageData.Length);
         }
 
         /// <summary>
         ///     Extracts the secret image from a ModifiedImage.
         /// </summary>
-        public void ExtractSecretImage()
+        public async Task ExtractSecretImage()
         {
-            //TODO: Implement
-            this.SecretImage = this.ModifiedImage;
-        }
+            var secretImageData = 
+                ImageUtilities.ReadLeastSignificantBits(await this.getImageData(this.ModifiedImage));
 
+            this.SecretImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
+
+            using var writeStream = this.SecretImage.PixelBuffer.AsStream();
+            await writeStream.WriteAsync(secretImageData, 0, secretImageData.Length);
+        }
+        /// <summary>
+        /// Saves the image.
+        /// </summary>
+        /// <param name="saveFile">The save file.</param>
+        /// <exception cref="ArgumentException">Invalid SaveFile.</exception>
         public async Task SaveImage(StorageFile saveFile)
         {
             if (saveFile == null)
@@ -135,6 +169,15 @@ namespace GroupHStegafy.Controllers
             var newImage = new BitmapImage();
             newImage.SetSource(inputStream);
             return newImage;
+        }
+
+        private async Task<byte[]> getImageData(WriteableBitmap bitmap)
+        {
+            using var stream = bitmap.PixelBuffer.AsStream();
+            var imageData = new byte[(uint) stream.Length];
+            await stream.ReadAsync(imageData, 0, imageData.Length);
+
+            return imageData;
         }
 
     }

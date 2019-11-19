@@ -22,15 +22,15 @@ namespace GroupHStegafy.Utilities
         /// <returns>The new OriginalByteArray</returns>
         public static byte[] ReplaceLeastSignificantBit(byte[] originalBytes, BitArray newBits)
         {
+            //TODO: Correctly implement
             if (newBits.Length * BytesPerPixel > originalBytes.Length)
             {
                 throw new ArgumentException("Not Enough Bytes in originalBytes");
             }
 
-            for (var i = 0; i < originalBytes.Length; i++)
+            for (var i = 0; i < originalBytes.Length - 1; i += BytesPerPixel)
             {
-                originalBytes[i] = BitArrayToByte(new BitArray(originalBytes[i * BytesPerPixel - pixelColorByteOffset(LeastSignificantPixelColor)])
-                    { [LeastSignificantBitInByte] = newBits[i] });
+                originalBytes[i] = replaceInsignificantBit(originalBytes[i], newBits[i / BytesPerPixel]);
             }
 
             return originalBytes;
@@ -42,8 +42,9 @@ namespace GroupHStegafy.Utilities
         /// <param name="bytes">The byte array.</param>
         /// <returns> a BitArray of the LeastSignificantBits</returns>
         /// <exception cref="ArgumentException">Invalid Byte Array</exception>
-        public static BitArray ReadLeastSignificantBits(byte[] bytes)
+        public static byte[] ReadLeastSignificantBits(byte[] bytes)
         {
+            //TODO: Correctly implement
             if (bytes.Length % BytesPerPixel != 0)
             {
                 throw new ArgumentException("Invalid Byte Array");
@@ -55,18 +56,17 @@ namespace GroupHStegafy.Utilities
                 bitArray[i] = new BitArray(bytes[i * BytesPerPixel - pixelColorByteOffset(LeastSignificantPixelColor)])[LeastSignificantBitInByte];
             }
 
-            return bitArray;
+            return BitArrayToByteArray(bitArray);
         }
 
-        /// <summary>
-        ///     Converts a bitArray to a Byte.
-        /// </summary>
-        /// <param name="bits">The bit array.</param>
-        /// <returns>The Byte created from the bit array.</returns>
-        /// <exception cref="ArgumentException">bits</exception>
-        public static byte BitArrayToByte(BitArray bits)
+        private static byte replaceInsignificantBit(byte aByte, bool bit)
         {
-            if (bits.Count != 8)
+            return bitArrayToByte(new BitArray(aByte) { [LeastSignificantBitInByte] = bit });
+        }
+
+        private static byte bitArrayToByte(BitArray bits)
+        {
+            if (bits.Length != 8)
             {
                 throw new ArgumentException("Incorrect number of bits.");
             }
@@ -98,7 +98,7 @@ namespace GroupHStegafy.Utilities
                     currentByteBitArray[j] = bits[i * 8 + j];
                 }
 
-                bytes[i] = BitArrayToByte(currentByteBitArray);
+                bytes[i] = bitArrayToByte(currentByteBitArray);
             }
 
             return bytes;

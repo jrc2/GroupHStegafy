@@ -20,6 +20,9 @@ namespace GroupHStegafy
 
         private readonly ImageManager imageManager;
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="MainPage"/> class.
+        /// </summary>
         public MainPage()
         {
             this.InitializeComponent();
@@ -50,7 +53,7 @@ namespace GroupHStegafy
 
             if (this.imageManager.SecretImage != null)
             {
-                this.imageManager.EmbedSecretImage();
+                await this.imageManager.EmbedSecretImage();
                 this.modifiedImageDisplay.Source = this.imageManager.ModifiedImage;
             }
 
@@ -73,7 +76,7 @@ namespace GroupHStegafy
 
             await this.imageManager.ReadModifiedImage(sourceImageFile);
             this.modifiedImageDisplay.Source = this.imageManager.ModifiedImage;
-            this.imageManager.ExtractSecretImage();
+            await this.imageManager.ExtractSecretImage();
             this.secretImageDisplay.Source = this.imageManager.SecretImage;
 
             this.openOriginalImageButton.IsEnabled = false;
@@ -95,7 +98,7 @@ namespace GroupHStegafy
 
             await this.imageManager.ReadSecretImage(sourceImageFile);
             this.secretImageDisplay.Source = this.imageManager.SecretImage;
-            this.imageManager.EmbedSecretImage();
+            await this.imageManager.EmbedSecretImage();
             this.modifiedImageDisplay.Source = this.imageManager.ModifiedImage;
 
             this.saveButton.IsEnabled = true;
