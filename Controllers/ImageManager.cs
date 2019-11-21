@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
@@ -107,11 +106,12 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task EmbedSecretImage()
         {
-            var secretMessageData = await this.getImageData(this.SecretImage);
+            var secretImageData = await this.getImageData(this.SecretImage);
             var originalImageData = await this.getImageData(this.OriginalImage);
 
             var modifiedImageData =
-                ImageUtilities.ReplaceLeastSignificantBit(originalImageData, new BitArray(secretMessageData));
+                ImageUtilities.ReplaceLeastSignificantBit(originalImageData, this.OriginalImage.PixelWidth, 
+                    secretImageData, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
 
             this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
 
@@ -125,9 +125,9 @@ namespace GroupHStegafy.Controllers
         public async Task ExtractSecretImage()
         {
             var secretImageData = 
-                ImageUtilities.ReadLeastSignificantBits(await this.getImageData(this.ModifiedImage));
+                ImageUtilities.ReadLeastSignificantBits(await this.getImageData(this.ModifiedImage), this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
 
-            this.SecretImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
+            this.SecretImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
 
             using var writeStream = this.SecretImage.PixelBuffer.AsStream();
             await writeStream.WriteAsync(secretImageData, 0, secretImageData.Length);
