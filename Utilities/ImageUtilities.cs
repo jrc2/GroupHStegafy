@@ -10,6 +10,7 @@ namespace GroupHStegafy.Utilities
     public static class ImageUtilities
     {
         private const PixelColor LeastSignificantPixelColor = PixelColor.Blue;
+        private const int LeastSignificantBit = 7;
         private const int BytesPerPixel = 4;
 
         /// <summary>
@@ -52,9 +53,9 @@ namespace GroupHStegafy.Utilities
         private static bool isPixelWhite(byte[] pixels, int x, int y, int width)
         {
             var offset = (x * width + y) * BytesPerPixel;
-            var r = pixels[offset + 2];
-            var g = pixels[offset + 1];
-            var b = pixels[offset + 0];
+            var r = pixels[offset + pixelColorByteOffset(PixelColor.Red)];
+            var g = pixels[offset + pixelColorByteOffset(PixelColor.Green)];
+            var b = pixels[offset + pixelColorByteOffset(PixelColor.Blue)];
             var pixelColor = Color.FromArgb(0, r, g, b);
             return pixelColor.R == 255 && pixelColor.G == 255 && pixelColor.B == 255;
         }
@@ -62,14 +63,22 @@ namespace GroupHStegafy.Utilities
         private static void setPixel(byte[] pixels, int x, int y, byte newPixel, int width)
         {
             var offset = (x * width + y) * BytesPerPixel;
-            pixels[offset] = newPixel;
+            pixels[offset + pixelColorByteOffset(PixelColor.Blue)] = newPixel;
         }
 
+        /// <summary>
+        ///     Returns a byte array of the image data of the secret message bitmap.
+        /// </summary>
+        /// <param name="modifiedImageBytes">The modified image bytes.</param>
+        /// <param name="modifiedImageWidth">Width of the modified image.</param>
+        /// <param name="modifiedImageHeight">Height of the modified image.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">Invalid ModifiedImageBytes</exception>
         public static byte[] ReadLeastSignificantBits(byte[] modifiedImageBytes, int modifiedImageWidth, int modifiedImageHeight)
         {
             if (modifiedImageBytes.Length % BytesPerPixel != 0)
             {
-                throw new ArgumentException("Invalid Byte Array");
+                throw new ArgumentException("Invalid ModifiedImageBytes");
             }
 
             var secretImageBytes = new byte[modifiedImageBytes.Length];
@@ -95,7 +104,7 @@ namespace GroupHStegafy.Utilities
 
         private static bool isInsignificantBit(byte insignificantBit)
         {
-            return convertByteToBoolArray(insignificantBit)[7];
+            return convertByteToBoolArray(insignificantBit)[LeastSignificantBit];
         }
 
         private static bool[] convertByteToBoolArray(byte aByte)
@@ -113,20 +122,22 @@ namespace GroupHStegafy.Utilities
 
         private static void addWhitePixel(byte[] pixels, int x, int y, int width)
         {
+            const int alphaOffset = 3;
             var offset = (x * width + y) * BytesPerPixel;
-            pixels[offset + 3] = 255;
-            pixels[offset + 2] = 255;
-            pixels[offset + 1] = 255;
-            pixels[offset + 0] = 255;
+            pixels[offset + alphaOffset] = 255;
+            pixels[offset + pixelColorByteOffset(PixelColor.Red)] = 255;
+            pixels[offset + pixelColorByteOffset(PixelColor.Green)] = 255;
+            pixels[offset + pixelColorByteOffset(PixelColor.Blue)] = 255;
         }
 
         private static void addBlackPixel(byte[] pixels, int x, int y, int width)
         {
+            const int alphaOffset = 3;
             var offset = (x * width + y) * BytesPerPixel;
-            pixels[offset + 3] = 255;
-            pixels[offset + 2] = 0;
-            pixels[offset + 1] = 0;
-            pixels[offset + 0] = 0;
+            pixels[offset + alphaOffset] = 255;
+            pixels[offset + pixelColorByteOffset(PixelColor.Red)] = 0;
+            pixels[offset + pixelColorByteOffset(PixelColor.Green)] = 0;
+            pixels[offset + pixelColorByteOffset(PixelColor.Blue)] = 0;
         }
 
         private static int pixelColorByteOffset(PixelColor color)
