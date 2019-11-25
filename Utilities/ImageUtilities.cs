@@ -136,6 +136,18 @@ namespace GroupHStegafy.Utilities
             imageData[offset + pixelColorByteOffset(PixelColor.Blue)] = color.B;
         }
 
+        private static Color getPixelColor(byte[] imageData, int x, int y, int width)
+        {
+            const int alphaOffset = 3;
+            var offset = calculateOffset(x, y, width);
+            var alpha = imageData[offset + alphaOffset];
+            var red = imageData[offset + pixelColorByteOffset(PixelColor.Red)];
+            var green = imageData[offset + pixelColorByteOffset(PixelColor.Green)];
+            var blue = imageData[offset + pixelColorByteOffset(PixelColor.Blue)];
+
+            return Color.FromArgb(alpha, red, green, blue);
+        }
+
         private static int pixelColorByteOffset(PixelColor color)
         {
             return color switch
@@ -153,10 +165,11 @@ namespace GroupHStegafy.Utilities
         /// <param name="imageData">The image data.</param>
         /// <param name="imageWidth">Width of the image.</param>
         /// <param name="isEncrypted">if set to <c>true</c> [is encrypted].</param>
+        /// <param name="bpcc">The BPCC.</param>
         /// <param name="messageType">Type of the message.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException">imageWidth - must be at least 1</exception>
-        public static byte[] AddHeader(byte[] imageData, int imageWidth, bool isEncrypted, MessageType messageType)
+        public static byte[] AddHeader(byte[] imageData, int imageWidth, bool isEncrypted, int bpcc, MessageType messageType)
         {
             if (imageWidth < 1)
             {
@@ -166,7 +179,7 @@ namespace GroupHStegafy.Utilities
             changePixelColor(imageData, 0, 0, imageWidth, Color.FromArgb(212, 212, 212));
 
             var offset = calculateOffset(1, 0, imageWidth);
-            imageData[offset + pixelColorByteOffset(PixelColor.Green)] = BytesPerPixel; //TODO should be bits per color channel
+            imageData[offset + pixelColorByteOffset(PixelColor.Green)] = (byte) bpcc;
 
             var secondPixelRedByte = getByteForColor(imageData, 1, 0, imageWidth, PixelColor.Red);
             var secondPixelBlueByte = getByteForColor(imageData, 1, 0, imageWidth, PixelColor.Blue);
@@ -193,6 +206,91 @@ namespace GroupHStegafy.Utilities
             setPixel(imageData, 1, 0, secondPixelBlueByte, imageWidth);
 
             return imageData;
+        }
+
+        /// <summary>
+        /// Determines whether the specified image data is encrypted.
+        /// </summary>
+        /// <param name="imageData">The image data.</param>
+        /// <param name="width">The image width.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified image data is encrypted; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">width - must be at least 1</exception>
+        public static bool IsEncrypted(byte[] imageData, int width)
+        {
+            if (width < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width), "must be at least 1");
+            }
+
+            var secondPixelRedByte = getByteForColor(imageData, 1, 0, width, PixelColor.Red);
+            secondPixelRedByte |= 0xFE;
+
+            return secondPixelRedByte == 0xFF;
+        }
+
+        /// <summary>
+        /// Gets the bits per color channel.
+        /// </summary>
+        /// <param name="imageData">The image data.</param>
+        /// <param name="width">The image width.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException">width - must be at least 1</exception>
+        public static int GetBpcc(byte[] imageData, int width)
+        {
+            if (width < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width), "must be at least 1");
+            }
+
+            var offset = calculateOffset(1, 0, width);
+            return imageData[offset + pixelColorByteOffset(PixelColor.Green)];
+        }
+
+        /// <summary>
+        /// Gets the type of the embedded message.
+        /// </summary>
+        /// <param name="imageData">The image data.</param>
+        /// <param name="width">The image width.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException">width - must be at least 1</exception>
+        public static MessageType GetMessageType(byte[] imageData, int width)
+        {
+            if (width < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width), "must be at least 1");
+            }
+
+            var secondPixelBlueByte = getByteForColor(imageData, 1, 0, width, PixelColor.Blue);
+            secondPixelBlueByte |= 0xFE;
+
+            if (secondPixelBlueByte == 0xFF)
+            {
+                return MessageType.Text;
+            }
+
+            return MessageType.MonochromeBmp;
+        }
+
+        /// <summary>
+        /// Determines whether a message is embedded
+        /// </summary>
+        /// <param name="imageData">The image data.</param>
+        /// <param name="width">The image width.</param>
+        /// <returns>
+        ///   <c>true</c> if message is embedded; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">width - must be at least 1</exception>
+        public static bool IsMessageEmbedded(byte[] imageData, int width)
+        {
+            if (width < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width), "must be at least 1");
+            }
+
+            var color = getPixelColor(imageData, 0, 0, width);
+            return color == Color.FromArgb(212, 212, 212);
         }
     }
 

@@ -113,7 +113,7 @@ namespace GroupHStegafy.Controllers
                 ImageUtilities.ReplaceLeastSignificantBit(originalImageData, this.OriginalImage.PixelWidth, 
                     secretImageData, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
 
-            modifiedImageData = ImageUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false,
+            modifiedImageData = ImageUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false, 1,
                 MessageType.MonochromeBmp);
 
             this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
@@ -127,13 +127,19 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task ExtractSecretImage()
         {
-            var secretImageData = 
-                ImageUtilities.ReadLeastSignificantBits(await this.getImageData(this.ModifiedImage), this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
+            var modifiedImageData = await this.getImageData(this.ModifiedImage);
+            var isMessageEmbedded = ImageUtilities.IsMessageEmbedded(modifiedImageData, this.ModifiedImage.PixelWidth);
+            var messageType = ImageUtilities.GetMessageType(modifiedImageData, this.ModifiedImage.PixelWidth);
+            if (isMessageEmbedded && messageType == MessageType.MonochromeBmp)
+            {
+                var secretImageData =
+                    ImageUtilities.ReadLeastSignificantBits(modifiedImageData, this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
 
-            this.SecretImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
+                this.SecretImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
 
-            using var writeStream = this.SecretImage.PixelBuffer.AsStream();
-            await writeStream.WriteAsync(secretImageData, 0, secretImageData.Length);
+                using var writeStream = this.SecretImage.PixelBuffer.AsStream();
+                await writeStream.WriteAsync(secretImageData, 0, secretImageData.Length);
+            }
         }
         /// <summary>
         /// Saves the image.
