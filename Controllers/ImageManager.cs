@@ -113,6 +113,9 @@ namespace GroupHStegafy.Controllers
                 ImageUtilities.ReplaceLeastSignificantBit(originalImageData, this.OriginalImage.PixelWidth, 
                     secretImageData, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
 
+            modifiedImageData = ImageUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false,
+                MessageType.MonochromeBmp);
+
             this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
 
             using var writeStream = this.ModifiedImage.PixelBuffer.AsStream();
