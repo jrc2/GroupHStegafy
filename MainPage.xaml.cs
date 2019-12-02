@@ -60,6 +60,8 @@ namespace GroupHStegafy
             }
 
             this.openSecretFileButton.IsEnabled = true;
+            this.secretMessageTextBlock.Visibility = Visibility.Visible;
+            this.embedSecretMessageButton.IsEnabled = true;
             this.openModifiedImageButton.IsEnabled = false;
         }
 
@@ -89,22 +91,23 @@ namespace GroupHStegafy
 
             if (await this.stegafyManager.GetSecretMessageType() == MessageType.MonochromeBmp)
             {
-                await this.extractSecretImage(sourceImageFile);
+                await this.extractSecretImage();
                 if (this.stegafyManager.SecretImage == null)
                 {
                     return;
                 }
+
+                this.secretMessageTextBlock.Visibility = Visibility.Collapsed;
                 this.secretImageDisplay.Visibility = Visibility.Visible;
                 this.secretImageDisplay.Source = this.stegafyManager.SecretImage;
             }
             else
             {
-                await this.extractSecretMessage(sourceImageFile);
+                await this.extractSecretMessage();
                 if (this.stegafyManager.SecretMessage == null)
                 {
                     return;
                 }
-                this.secretMessageTextBlock.Visibility = Visibility.Visible;
                 this.secretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
             }
 
@@ -120,7 +123,7 @@ namespace GroupHStegafy
                 return;
             }
 
-            var sourceSecretFile = await selectSourceTextFile();
+            var sourceSecretFile = await selectSourceFile();
             if (sourceSecretFile == null)
             {
                 return;
@@ -139,7 +142,7 @@ namespace GroupHStegafy
             }
             else
             {
-                await this.embedSecretMessage(sourceSecretFile);
+                await this.embedSecretMessageFromFile(sourceSecretFile);
                 if (this.stegafyManager.SecretMessage == null)
                 {
                     return;
@@ -149,20 +152,25 @@ namespace GroupHStegafy
                 this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
             }
 
+            this.embedSecretMessageButton.IsEnabled = false;
             this.saveButton.IsEnabled = true;
             this.encryptCheckbox.IsEnabled = true;
         }
 
-        private async Task extractSecretImage(StorageFile sourceImageFile)
+        private async void embedSecretMessageButton_Click(object sender, RoutedEventArgs e)
         {
-            this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
-            try
+            if (this.secretMessageTextBlock.Text.Equals(""))
             {
-                await this.stegafyManager.ExtractSecretImage();
+                return;
             }
-            catch (ArgumentException exception)
+            await this.embedSecretMessage(this.secretMessageTextBlock.Text);
+
+            if (this.stegafyManager.ModifiedImage != null)
             {
-                this.displayErrorMessage(exception.Message);
+                this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
+
+                this.saveButton.IsEnabled = true;
+                this.encryptCheckbox.IsEnabled = true;
             }
         }
 
@@ -179,12 +187,12 @@ namespace GroupHStegafy
             }
         }
 
-        private async Task extractSecretMessage(StorageFile sourceImageFile)
+        private async Task extractSecretImage()
         {
             this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
             try
             {
-                await this.stegafyManager.ExtractSecretMessage();
+                await this.stegafyManager.ExtractSecretImage();
             }
             catch (ArgumentException exception)
             {
@@ -192,12 +200,38 @@ namespace GroupHStegafy
             }
         }
 
-        private async Task embedSecretMessage(StorageFile sourceTextFile)
+        private async Task embedSecretMessage(string message)
+        {
+            this.stegafyManager.SecretMessage = message;
+            try
+            {
+                await this.stegafyManager.EmbedSecretMessage();
+            }
+            catch (ArgumentException exception)
+            {
+                this.displayErrorMessage(exception.Message);
+            }
+        }
+
+        private async Task embedSecretMessageFromFile(StorageFile sourceTextFile)
         {
             await this.stegafyManager.ReadSecretMessage(sourceTextFile);
             try
             {
                 await this.stegafyManager.EmbedSecretMessage();
+            }
+            catch (ArgumentException exception)
+            {
+                this.displayErrorMessage(exception.Message);
+            }
+        }
+
+        private async Task extractSecretMessage()
+        {
+            this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
+            try
+            {
+                await this.stegafyManager.ExtractSecretMessage();
             }
             catch (ArgumentException exception)
             {
@@ -221,14 +255,14 @@ namespace GroupHStegafy
             return file;
         }
 
-        private static async Task<StorageFile> selectSourceTextFile()
+        private static async Task<StorageFile> selectSourceFile()
         {
             var openPicker = new FileOpenPicker
             {
                 ViewMode = PickerViewMode.Thumbnail,
                 SuggestedStartLocation = PickerLocationId.PicturesLibrary
             };
-            openPicker.FileTypeFilter.Add(".txt");
+            openPicker.FileTypeFilter.Add("*");
 
             var file = await openPicker.PickSingleFileAsync();
 

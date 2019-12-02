@@ -171,7 +171,8 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task EmbedSecretMessage()
         {
-            //TODO: Implement
+            //TODO Implement
+            throw new ArgumentException("Not Implemented");
         }
 
         /// <summary>
@@ -245,6 +246,7 @@ namespace GroupHStegafy.Controllers
         public async Task SaveTextFile(StorageFile saveFile)
         {
             //TODO Implement
+            throw new ArgumentException("Not Implemented");
         }
 
         private static async Task<BitmapImage> makeACopyOfTheFileToWorkOn(StorageFile imageFile)
