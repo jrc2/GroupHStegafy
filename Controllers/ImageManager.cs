@@ -5,6 +5,7 @@ using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
+using GroupHStegafy.Model;
 using GroupHStegafy.Utilities;
 
 namespace GroupHStegafy.Controllers
@@ -109,11 +110,13 @@ namespace GroupHStegafy.Controllers
             var secretImageData = await this.getImageData(this.SecretImage);
             var originalImageData = await this.getImageData(this.OriginalImage);
 
+            var imageEncoder = new ImageEncoder();
+
             var modifiedImageData =
-                ImageUtilities.ReplaceLeastSignificantBit(originalImageData, this.OriginalImage.PixelWidth, 
+                imageEncoder.EncodeImage(originalImageData, this.OriginalImage.PixelWidth, 
                     secretImageData, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
 
-            modifiedImageData = ImageUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false, 1,
+            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false, 1,
                 MessageType.MonochromeBmp);
 
             this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
@@ -128,12 +131,15 @@ namespace GroupHStegafy.Controllers
         public async Task ExtractSecretImage()
         {
             var modifiedImageData = await this.getImageData(this.ModifiedImage);
-            var isMessageEmbedded = ImageUtilities.IsMessageEmbedded(modifiedImageData, this.ModifiedImage.PixelWidth);
-            var messageType = ImageUtilities.GetMessageType(modifiedImageData, this.ModifiedImage.PixelWidth);
+
+            var imageEncoder = new ImageEncoder();
+
+            var isMessageEmbedded = HeaderUtilities.IsMessageEmbedded(modifiedImageData, this.ModifiedImage.PixelWidth);
+            var messageType = HeaderUtilities.GetMessageType(modifiedImageData, this.ModifiedImage.PixelWidth);
             if (isMessageEmbedded && messageType == MessageType.MonochromeBmp)
             {
                 var secretImageData =
-                    ImageUtilities.ReadLeastSignificantBits(modifiedImageData, this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
+                    imageEncoder.DecodeImage(modifiedImageData, this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
 
                 this.SecretImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
 

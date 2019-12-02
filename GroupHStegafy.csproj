@@ -132,8 +132,11 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\ImageManager.cs" />
+    <Compile Include="Utilities\HeaderUtilities.cs" />
     <Compile Include="Model\PixelColor.cs" />
+    <Compile Include="Model\TextEncoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Model\ImageEncoder.cs" />
     <Compile Include="Utilities\ImageUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -169,7 +172,9 @@
       <Version>4.6.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="View\" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

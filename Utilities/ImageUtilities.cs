@@ -4,151 +4,61 @@ using GroupHStegafy.Model;
 
 namespace GroupHStegafy.Utilities
 {
-    /// <summary>
-    ///     Provides Basic Utility for modifying an image for Steganography. 
-    /// </summary>
     public static class ImageUtilities
     {
-        private const PixelColor LeastSignificantPixelColor = PixelColor.Blue;
-        private const int LeastSignificantBit = 7;
-        private const int BytesPerPixel = 4;
+        public const int BytesPerPixel = 4;
 
-        /// <summary>
-        ///     Replaces the least significant bit.
-        /// </summary>
-        /// <param name="originalBytes">The original bytes.</param>
-        /// <param name="originalImageWidth">Width of the original image.</param>
-        /// <param name="secretImageBytes">The secret image bytes.</param>
-        /// <param name="secretImageWidth">Width of the secret image.</param>
-        /// <param name="secretImageHeight">Height of the secret image.</param>
-        /// <returns></returns>
-        public static byte[] ReplaceLeastSignificantBit(byte[] originalBytes, int originalImageWidth, byte[] secretImageBytes, int secretImageWidth, int secretImageHeight)
+        public static void ChangePixelColor(byte[] imageData, int x, int y, int width, Color color)
         {
-            for (var y = 0; y < secretImageHeight; y++)
-            {
-                for (var x = 0; x < secretImageWidth; x++)
-                {
-                    var originalLsb = getByteForColor(originalBytes, x, y, originalImageWidth, LeastSignificantPixelColor);
-                    if (isPixelWhite(secretImageBytes, x, y, secretImageWidth))
-                    {
-                        originalLsb |= 1;
-                    }
-                    else
-                    {
-                        originalLsb &= 0xfe;
-                    }
-                    setPixel(originalBytes, x, y, originalLsb, originalImageWidth);
-                }
-            }
-
-            return originalBytes;
+            const int alphaOffset = 3;
+            var offset = CalculateOffset(x, y, width);
+            imageData[offset + alphaOffset] = color.A;
+            imageData[offset + PixelColorByteOffset(PixelColor.Red)] = color.R;
+            imageData[offset + PixelColorByteOffset(PixelColor.Green)] = color.G;
+            imageData[offset + PixelColorByteOffset(PixelColor.Blue)] = color.B;
         }
 
-        private static int calculateOffset(int x, int y, int width)
+        public static byte GetByteForColor(byte[] imageData, int x, int y, int width, PixelColor pixelColor)
+        {
+            var offset = CalculateOffset(x, y, width);
+            return imageData[offset + PixelColorByteOffset(pixelColor)];
+        }
+
+        public static int CalculateOffset(int x, int y, int width)
         {
             return (y * width + x) * BytesPerPixel;
         }
 
-        private static byte getByteForColor(byte[] imageData, int x, int y, int width, PixelColor pixelColor)
+        public static void SetPixel(byte[] imageData, int x, int y, byte newPixel, int width)
         {
-            var offset = calculateOffset(x, y, width);
-            return imageData[offset + pixelColorByteOffset(pixelColor)];
+            // TODO check naming (is newPixel is not a pixel)
+            var offset = CalculateOffset(x, y, width);
+            imageData[offset + PixelColorByteOffset(PixelColor.Blue)] = newPixel;
         }
 
-        private static bool isPixelWhite(byte[] imageData, int x, int y, int width)
+        public static bool IsPixelWhite(byte[] imageData, int x, int y, int width)
         {
-            var offset = calculateOffset(x, y, width);
-            var r = imageData[offset + pixelColorByteOffset(PixelColor.Red)];
-            var g = imageData[offset + pixelColorByteOffset(PixelColor.Green)];
-            var b = imageData[offset + pixelColorByteOffset(PixelColor.Blue)];
+            var offset = CalculateOffset(x, y, width);
+            var r = imageData[offset + PixelColorByteOffset(PixelColor.Red)];
+            var g = imageData[offset + PixelColorByteOffset(PixelColor.Green)];
+            var b = imageData[offset + PixelColorByteOffset(PixelColor.Blue)];
             var pixelColor = Color.FromArgb(0, r, g, b);
             return pixelColor.R == 255 && pixelColor.G == 255 && pixelColor.B == 255;
         }
 
-        private static void setPixel(byte[] imageData, int x, int y, byte newPixel, int width)
-        {
-            // TODO check naming (is newPixel is not a pixel)
-            var offset = calculateOffset(x, y, width);
-            imageData[offset + pixelColorByteOffset(PixelColor.Blue)] = newPixel;
-        }
-
-        /// <summary>
-        ///     Returns a byte array of the image data of the secret message bitmap.
-        /// </summary>
-        /// <param name="modifiedImageBytes">The modified image bytes.</param>
-        /// <param name="modifiedImageWidth">Width of the modified image.</param>
-        /// <param name="modifiedImageHeight">Height of the modified image.</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException">Invalid ModifiedImageBytes</exception>
-        public static byte[] ReadLeastSignificantBits(byte[] modifiedImageBytes, int modifiedImageWidth, int modifiedImageHeight)
-        {
-            if (modifiedImageBytes.Length % BytesPerPixel != 0)
-            {
-                throw new ArgumentException("Invalid ModifiedImageBytes");
-            }
-
-            var secretImageBytes = new byte[modifiedImageBytes.Length];
-
-            for (var y = 0; y < modifiedImageHeight; y++)
-            {
-                for (var x = 0; x < modifiedImageWidth; x++)
-                {
-                    if (isInsignificantBit(getByteForColor(modifiedImageBytes, x, y, modifiedImageWidth, LeastSignificantPixelColor)))
-                    {
-                        changePixelColor(secretImageBytes, x, y, modifiedImageWidth, Color.White);
-                    }
-                    else
-                    {
-                        changePixelColor(secretImageBytes, x, y, modifiedImageWidth, Color.Black);
-                    }
-
-                }
-            }
-
-            return secretImageBytes;
-        }
-
-        private static bool isInsignificantBit(byte insignificantBit)
-        {
-            return convertByteToBoolArray(insignificantBit)[LeastSignificantBit];
-        }
-
-        private static bool[] convertByteToBoolArray(byte aByte)
-        {
-            var result = new bool[8];
-
-            for (var i = 0; i < 8; i++)
-            {
-                result[i] = (aByte & (1 << i)) != 0;
-            }
-            Array.Reverse(result);
-
-            return result;
-        }
-
-        private static void changePixelColor(byte[] imageData, int x, int y, int width, Color color)
+        public static Color GetPixelColor(byte[] imageData, int x, int y, int width)
         {
             const int alphaOffset = 3;
-            var offset = calculateOffset(x, y, width);
-            imageData[offset + alphaOffset] = color.A;
-            imageData[offset + pixelColorByteOffset(PixelColor.Red)] = color.R;
-            imageData[offset + pixelColorByteOffset(PixelColor.Green)] = color.G;
-            imageData[offset + pixelColorByteOffset(PixelColor.Blue)] = color.B;
-        }
-
-        private static Color getPixelColor(byte[] imageData, int x, int y, int width)
-        {
-            const int alphaOffset = 3;
-            var offset = calculateOffset(x, y, width);
+            var offset = CalculateOffset(x, y, width);
             var alpha = imageData[offset + alphaOffset];
-            var red = imageData[offset + pixelColorByteOffset(PixelColor.Red)];
-            var green = imageData[offset + pixelColorByteOffset(PixelColor.Green)];
-            var blue = imageData[offset + pixelColorByteOffset(PixelColor.Blue)];
+            var red = imageData[offset + PixelColorByteOffset(PixelColor.Red)];
+            var green = imageData[offset + PixelColorByteOffset(PixelColor.Green)];
+            var blue = imageData[offset + PixelColorByteOffset(PixelColor.Blue)];
 
             return Color.FromArgb(alpha, red, green, blue);
         }
 
-        private static int pixelColorByteOffset(PixelColor color)
+        public static int PixelColorByteOffset(PixelColor color)
         {
             return color switch
             {
@@ -157,77 +67,6 @@ namespace GroupHStegafy.Utilities
                 PixelColor.Red => 2,
                 _ => throw new ArgumentOutOfRangeException(nameof(color), color, "Invalid Color.")
             };
-        }
-
-        /// <summary>
-        /// Adds the image header.
-        /// </summary>
-        /// <param name="imageData">The image data.</param>
-        /// <param name="imageWidth">Width of the image.</param>
-        /// <param name="isEncrypted">if set to <c>true</c> [is encrypted].</param>
-        /// <param name="bpcc">The BPCC.</param>
-        /// <param name="messageType">Type of the message.</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException">imageWidth - must be at least 1</exception>
-        public static byte[] AddHeader(byte[] imageData, int imageWidth, bool isEncrypted, int bpcc, MessageType messageType)
-        {
-            if (imageWidth < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(imageWidth), "must be at least 1");
-            }
-
-            changePixelColor(imageData, 0, 0, imageWidth, Color.FromArgb(212, 212, 212));
-
-            var offset = calculateOffset(1, 0, imageWidth);
-            imageData[offset + pixelColorByteOffset(PixelColor.Green)] = (byte) bpcc;
-
-            var secondPixelRedByte = getByteForColor(imageData, 1, 0, imageWidth, PixelColor.Red);
-            var secondPixelBlueByte = getByteForColor(imageData, 1, 0, imageWidth, PixelColor.Blue);
-
-            if (isEncrypted)
-            {
-                secondPixelRedByte |= 1;
-            }
-            else
-            {
-                secondPixelRedByte &= 0xfe;
-            }
-
-            if (messageType == MessageType.Text)
-            {
-                secondPixelBlueByte |= 1;
-            }
-            else
-            {
-                secondPixelBlueByte &= 0xfe;
-            }
-
-            setPixel(imageData, 1, 0, secondPixelRedByte, imageWidth);
-            setPixel(imageData, 1, 0, secondPixelBlueByte, imageWidth);
-
-            return imageData;
-        }
-
-        /// <summary>
-        /// Determines whether the specified image data is encrypted.
-        /// </summary>
-        /// <param name="imageData">The image data.</param>
-        /// <param name="width">The image width.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified image data is encrypted; otherwise, <c>false</c>.
-        /// </returns>
-        /// <exception cref="ArgumentOutOfRangeException">width - must be at least 1</exception>
-        public static bool IsEncrypted(byte[] imageData, int width)
-        {
-            if (width < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(width), "must be at least 1");
-            }
-
-            var secondPixelRedByte = getByteForColor(imageData, 1, 0, width, PixelColor.Red);
-            secondPixelRedByte |= 0xFE;
-
-            return secondPixelRedByte == 0xFF;
         }
 
         /// <summary>
@@ -244,68 +83,8 @@ namespace GroupHStegafy.Utilities
                 throw new ArgumentOutOfRangeException(nameof(width), "must be at least 1");
             }
 
-            var offset = calculateOffset(1, 0, width);
-            return imageData[offset + pixelColorByteOffset(PixelColor.Green)];
+            var offset = CalculateOffset(1, 0, width);
+            return imageData[offset + PixelColorByteOffset(PixelColor.Green)];
         }
-
-        /// <summary>
-        /// Gets the type of the embedded message.
-        /// </summary>
-        /// <param name="imageData">The image data.</param>
-        /// <param name="width">The image width.</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException">width - must be at least 1</exception>
-        public static MessageType GetMessageType(byte[] imageData, int width)
-        {
-            if (width < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(width), "must be at least 1");
-            }
-
-            var secondPixelBlueByte = getByteForColor(imageData, 1, 0, width, PixelColor.Blue);
-            secondPixelBlueByte |= 0xFE;
-
-            if (secondPixelBlueByte == 0xFF)
-            {
-                return MessageType.Text;
-            }
-
-            return MessageType.MonochromeBmp;
-        }
-
-        /// <summary>
-        /// Determines whether a message is embedded
-        /// </summary>
-        /// <param name="imageData">The image data.</param>
-        /// <param name="width">The image width.</param>
-        /// <returns>
-        ///   <c>true</c> if message is embedded; otherwise, <c>false</c>.
-        /// </returns>
-        /// <exception cref="ArgumentOutOfRangeException">width - must be at least 1</exception>
-        public static bool IsMessageEmbedded(byte[] imageData, int width)
-        {
-            if (width < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(width), "must be at least 1");
-            }
-
-            var color = getPixelColor(imageData, 0, 0, width);
-            return color == Color.FromArgb(212, 212, 212);
-        }
-    }
-
-    /// <summary>
-    /// Embedded message types
-    /// </summary>
-    public enum MessageType
-    {
-        /// <summary>
-        /// Text message type
-        /// </summary>
-        Text,
-        /// <summary>
-        /// Monochrome BMP message type
-        /// </summary>
-        MonochromeBmp
     }
 }
