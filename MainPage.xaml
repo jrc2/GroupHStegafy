@@ -24,5 +24,8 @@
         <Button x:Name="openModifiedImageButton" Content="Open Modified Image" Margin="19,151,0,0" VerticalAlignment="Top" Click="openModifiedImageButton_Click" RenderTransformOrigin="0.137,-1.236"/>
         <Button x:Name="saveButton" Content="Save Unencrypted" Margin="19,344,0,0" VerticalAlignment="Top" Click="saveButton_Click" IsEnabled="False"/>
         <Button x:Name="saveEncrypedButton" Content="Save Encrypted" Margin="19,392,0,0" VerticalAlignment="Top" Click="saveButton_Click" IsEnabled="False"/>
+        <TextBlock HorizontalAlignment="Left" Margin="350,408,0,0" Text="Original" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="745,408,0,0" Text="Secret" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="1121,410,0,0" Text="Modified" TextWrapping="Wrap" VerticalAlignment="Top"/>
     </Grid>
 </Page>
