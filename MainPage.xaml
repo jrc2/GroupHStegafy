@@ -14,18 +14,20 @@
             <Image x:Name="originalImageDisplay"/>
         </Border>
         <Border BorderBrush="{ThemeResource ApplicationForegroundThemeBrush}" BorderThickness="3" HorizontalAlignment="Left" Height="355" VerticalAlignment="Top" Width="355" Canvas.ZIndex="1" Margin="586,46,0,0">
-            <Image x:Name="secretImageDisplay"/>
+            <Image x:Name="secretImageDisplay" Visibility="Collapsed"/>
         </Border>
+        <TextBox x:Name="secretMessageTextBlock"  HorizontalAlignment="Left" Margin="586,46,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="355" Height="355" Visibility="Collapsed"/>
         <Border BorderBrush="{ThemeResource ApplicationForegroundThemeBrush}" BorderThickness="3" HorizontalAlignment="Left" Height="355" VerticalAlignment="Center" Width="355" Canvas.ZIndex="1" Margin="972,0,0,0">
             <Image x:Name="modifiedImageDisplay"/>
         </Border>
         <Button x:Name="openOriginalImageButton" Content="Open Original Image" Margin="19,48,0,0" VerticalAlignment="Top" Click="openOriginalImageButton_Click" RenderTransformOrigin="0.137,-1.236"/>
-        <Button x:Name="openSecretImageButton" Content="Open Secret Image" Margin="19,99,0,0" VerticalAlignment="Top" Click="openSecretImageButton_Click" RenderTransformOrigin="0.137,-1.236" IsEnabled="False"/>
+        <Button x:Name="openSecretFileButton" Content="Open Secret File" Margin="19,99,0,0" VerticalAlignment="Top" Click="openSecretFileButton_Click" RenderTransformOrigin="0.137,-1.236" IsEnabled="False"/>
         <Button x:Name="openModifiedImageButton" Content="Open Modified Image" Margin="19,151,0,0" VerticalAlignment="Top" Click="openModifiedImageButton_Click" RenderTransformOrigin="0.137,-1.236"/>
-        <Button x:Name="saveButton" Content="Save Unencrypted" Margin="19,344,0,0" VerticalAlignment="Top" Click="saveButton_Click" IsEnabled="False"/>
-        <Button x:Name="saveEncrypedButton" Content="Save Encrypted" Margin="19,392,0,0" VerticalAlignment="Top" Click="saveButton_Click" IsEnabled="False"/>
-        <TextBlock HorizontalAlignment="Left" Margin="350,408,0,0" Text="Original" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="745,408,0,0" Text="Secret" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1121,410,0,0" Text="Modified" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Button x:Name="saveButton" Content="Save" Margin="19,371,0,0" VerticalAlignment="Top" Click="saveButton_Click" IsEnabled="False"/>
+        <TextBlock x:Name="errorTextBlock" HorizontalAlignment="Left" Margin="197,10,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="564" FontWeight="Bold" Foreground="Red"/>
+        <TextBlock HorizontalAlignment="Left" Margin="329,408,0,0" Text="Original Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="744,410,0,0" Text="Secret" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="1104,414,0,0" Text="Modified Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <CheckBox x:Name="encryptCheckbox" Content="Encrypt" Margin="20,405,0,0" VerticalAlignment="Top" IsEnabled="False" Checked="EncryptCheckbox_OnChecked" Unchecked="EncryptCheckbox_OnUnchecked"/>
     </Grid>
 </Page>

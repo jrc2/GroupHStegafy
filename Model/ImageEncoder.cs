@@ -23,6 +23,11 @@ namespace GroupHStegafy.Model
         /// <returns></returns>
         public byte[] EncodeImage(byte[] originalBytes, int originalImageWidth, byte[] secretImageBytes, int secretImageWidth, int secretImageHeight)
         {
+            if (originalBytes.Length < secretImageBytes.Length || originalImageWidth < secretImageWidth)
+            {
+                throw new ArgumentException("Original Image cannot contain Secret Image.");
+            }
+
             for (var y = 0; y < secretImageHeight; y++)
             {
                 for (var x = 0; x < secretImageWidth; x++)
@@ -55,7 +60,7 @@ namespace GroupHStegafy.Model
         {
             if (modifiedImageBytes.Length % ImageUtilities.BytesPerPixel != 0)
             {
-                throw new ArgumentException("Invalid ModifiedImageBytes");
+                throw new ArgumentException("Invalid Modified Image");
             }
 
             var secretImageBytes = new byte[modifiedImageBytes.Length];
@@ -79,9 +84,19 @@ namespace GroupHStegafy.Model
             return secretImageBytes;
         }
 
+        /// <summary>
+        ///     Encrypts the modified image.
+        /// </summary>
+        public static byte[] EncryptImageData(byte[] modifiedImageBytes, int modifiedImageWidth)
+        {
+            //TODO: Implement
+            Array.Reverse(modifiedImageBytes);
+            return modifiedImageBytes;
+        }
+
         private bool isInsignificantBit(byte insignificantBit)
         {
-            return convertByteToBoolArray(insignificantBit)[LeastSignificantBit];
+            return this.convertByteToBoolArray(insignificantBit)[LeastSignificantBit];
         }
 
         private bool[] convertByteToBoolArray(byte aByte)

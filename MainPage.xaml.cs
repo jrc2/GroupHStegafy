@@ -7,6 +7,7 @@ using Windows.Storage.Pickers;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using GroupHStegafy.Controllers;
+using GroupHStegafy.Utilities;
 
 namespace GroupHStegafy
 {
@@ -18,7 +19,7 @@ namespace GroupHStegafy
         private static readonly double ApplicationHeight = (double)Application.Current.Resources["AppHeight"];
         private static readonly double ApplicationWidth = (double)Application.Current.Resources["AppWidth"];
 
-        private readonly ImageManager imageManager;
+        private readonly StegafyManager stegafyManager;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="MainPage"/> class.
@@ -32,12 +33,13 @@ namespace GroupHStegafy
             ApplicationView.GetForCurrentView()
                            .SetPreferredMinSize(new Size(ApplicationWidth, ApplicationHeight));
 
-            this.imageManager = new ImageManager();
+            this.stegafyManager = new StegafyManager();
         }
 
         private async void openOriginalImageButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.imageManager.ModifiedImage != null)
+            this.clearErrorMessage();
+            if (this.stegafyManager.ModifiedImage != null)
             {
                 return;
             }
@@ -48,22 +50,23 @@ namespace GroupHStegafy
                 return;
             }
 
-            await this.imageManager.ReadOriginalImage(sourceImageFile);
-            this.originalImageDisplay.Source = this.imageManager.OriginalImage;
+            await this.stegafyManager.ReadOriginalImage(sourceImageFile);
+            this.originalImageDisplay.Source = this.stegafyManager.OriginalImage;
 
-            if (this.imageManager.SecretImage != null)
+            if (this.stegafyManager.SecretImage != null)
             {
-                await this.imageManager.EmbedSecretImage();
-                this.modifiedImageDisplay.Source = this.imageManager.ModifiedImage;
+                await this.stegafyManager.EmbedSecretImage();
+                this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
             }
 
-            this.openSecretImageButton.IsEnabled = true;
+            this.openSecretFileButton.IsEnabled = true;
             this.openModifiedImageButton.IsEnabled = false;
         }
 
         private async void openModifiedImageButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.imageManager.OriginalImage != null)
+            this.clearErrorMessage();
+            if (this.stegafyManager.OriginalImage != null)
             {
                 return;
             }
@@ -74,34 +77,132 @@ namespace GroupHStegafy
                 return;
             }
 
-            await this.imageManager.ReadModifiedImage(sourceImageFile);
-            this.modifiedImageDisplay.Source = this.imageManager.ModifiedImage;
-            await this.imageManager.ExtractSecretImage();
-            this.secretImageDisplay.Source = this.imageManager.SecretImage;
+            try
+            {
+                await this.stegafyManager.ReadModifiedImage(sourceImageFile);
+            }
+            catch (ArgumentException exception)
+            {
+                this.displayErrorMessage(exception.Message);
+                return;
+            }
+
+            if (await this.stegafyManager.GetSecretMessageType() == MessageType.MonochromeBmp)
+            {
+                await this.extractSecretImage(sourceImageFile);
+                if (this.stegafyManager.SecretImage == null)
+                {
+                    return;
+                }
+                this.secretImageDisplay.Visibility = Visibility.Visible;
+                this.secretImageDisplay.Source = this.stegafyManager.SecretImage;
+            }
+            else
+            {
+                await this.extractSecretMessage(sourceImageFile);
+                if (this.stegafyManager.SecretMessage == null)
+                {
+                    return;
+                }
+                this.secretMessageTextBlock.Visibility = Visibility.Visible;
+                this.secretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
+            }
 
             this.openOriginalImageButton.IsEnabled = false;
             this.saveButton.IsEnabled = true;
         }
 
-        private async void openSecretImageButton_Click(object sender, RoutedEventArgs e)
+        private async void openSecretFileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.imageManager.OriginalImage == null)
+            this.clearErrorMessage();
+            if (this.stegafyManager.OriginalImage == null)
             {
                 return;
             }
 
-            var sourceImageFile = await selectSourceImageFile();
-            if (sourceImageFile == null)
+            var sourceSecretFile = await selectSourceTextFile();
+            if (sourceSecretFile == null)
             {
                 return;
             }
 
-            await this.imageManager.ReadSecretImage(sourceImageFile);
-            this.secretImageDisplay.Source = this.imageManager.SecretImage;
-            await this.imageManager.EmbedSecretImage();
-            this.modifiedImageDisplay.Source = this.imageManager.ModifiedImage;
+            if (HeaderUtilities.IsImageFile(sourceSecretFile))
+            {
+                await this.embedSecretImage(sourceSecretFile);
+                if (this.stegafyManager.ModifiedImage == null)
+                {
+                    return;
+                }
+                this.secretImageDisplay.Visibility = Visibility.Visible;
+                this.secretImageDisplay.Source = this.stegafyManager.SecretImage;
+                this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
+            }
+            else
+            {
+                await this.embedSecretMessage(sourceSecretFile);
+                if (this.stegafyManager.SecretMessage == null)
+                {
+                    return;
+                }
+                this.secretMessageTextBlock.Visibility = Visibility.Visible;
+                this.secretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
+                this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
+            }
 
             this.saveButton.IsEnabled = true;
+            this.encryptCheckbox.IsEnabled = true;
+        }
+
+        private async Task extractSecretImage(StorageFile sourceImageFile)
+        {
+            this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
+            try
+            {
+                await this.stegafyManager.ExtractSecretImage();
+            }
+            catch (ArgumentException exception)
+            {
+                this.displayErrorMessage(exception.Message);
+            }
+        }
+
+        private async Task embedSecretImage(StorageFile sourceImageFile)
+        {
+            await this.stegafyManager.ReadSecretImage(sourceImageFile);
+            try
+            {
+                await this.stegafyManager.EmbedSecretImage();
+            }
+            catch (ArgumentException exception)
+            {
+                this.displayErrorMessage(exception.Message);
+            }
+        }
+
+        private async Task extractSecretMessage(StorageFile sourceImageFile)
+        {
+            this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
+            try
+            {
+                await this.stegafyManager.ExtractSecretMessage();
+            }
+            catch (ArgumentException exception)
+            {
+                this.displayErrorMessage(exception.Message);
+            }
+        }
+
+        private async Task embedSecretMessage(StorageFile sourceTextFile)
+        {
+            await this.stegafyManager.ReadSecretMessage(sourceTextFile);
+            try
+            {
+                await this.stegafyManager.EmbedSecretMessage();
+            }
+            catch (ArgumentException exception)
+            {
+                this.displayErrorMessage(exception.Message);
+            }
         }
 
         private static async Task<StorageFile> selectSourceImageFile()
@@ -120,21 +221,48 @@ namespace GroupHStegafy
             return file;
         }
 
+        private static async Task<StorageFile> selectSourceTextFile()
+        {
+            var openPicker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary
+            };
+            openPicker.FileTypeFilter.Add(".txt");
+
+            var file = await openPicker.PickSingleFileAsync();
+
+            return file;
+        }
+
         private async void saveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.imageManager.ModifiedImage == null)
+            this.clearErrorMessage();
+            if (this.stegafyManager.ModifiedImage == null)
             {
                 return;
             }
 
-            var saveFile = await selectSaveFile();
-            if (saveFile != null)
+            if (this.stegafyManager.SecretMessage == null)
             {
-                await this.imageManager.SaveImage(saveFile);
+                var saveFile = await selectSaveImageFile();
+                if (saveFile != null && this.encryptCheckbox.IsChecked.HasValue)
+                {
+                    await this.stegafyManager.SaveImage(saveFile, this.encryptCheckbox.IsChecked.Value);
+                }
             }
+            else
+            {
+                var saveFile = await selectSaveTextFile();
+                if (saveFile != null)
+                {
+                    await this.stegafyManager.SaveTextFile(saveFile);
+                }
+            }
+            
         }
 
-        private static async Task<StorageFile> selectSaveFile()
+        private static async Task<StorageFile> selectSaveImageFile()
         {
             var fileSavePicker = new FileSavePicker
             {
@@ -146,6 +274,41 @@ namespace GroupHStegafy
             var saveFile = await fileSavePicker.PickSaveFileAsync();
 
             return saveFile;
+        }
+
+        private static async Task<StorageFile> selectSaveTextFile()
+        {
+            var fileSavePicker = new FileSavePicker
+            {
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                SuggestedFileName = "text"
+            };
+            fileSavePicker.FileTypeChoices.Add("Text files", new List<string> { ".txt" });
+
+            var saveFile = await fileSavePicker.PickSaveFileAsync();
+
+            return saveFile;
+        }
+
+        private void displayErrorMessage(string errorMessage)
+        {
+            this.errorTextBlock.Text = errorMessage;
+        }
+
+        private void clearErrorMessage()
+        {
+            this.errorTextBlock.Text = "";
+        }
+
+        private async void EncryptCheckbox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            await this.stegafyManager.EncryptModifiedImage();
+            this.modifiedImageDisplay.Source = this.stegafyManager.EncryptedModifiedImage;
+        }
+
+        private void EncryptCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
         }
     }
 }

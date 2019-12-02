@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using Windows.Storage;
 using GroupHStegafy.Model;
 
 namespace GroupHStegafy.Utilities
@@ -123,6 +124,12 @@ namespace GroupHStegafy.Utilities
 
             var color = ImageUtilities.GetPixelColor(imageData, 0, 0, width);
             return color == Color.FromArgb(212, 212, 212);
+        }
+
+        public static bool IsImageFile(StorageFile file)
+        {
+            //TODO: Implement
+            return true;
         }
     }
 
