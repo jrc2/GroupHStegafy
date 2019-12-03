@@ -3,7 +3,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
 using GroupHStegafy.Model;
 using GroupHStegafy.Utilities;
@@ -58,7 +57,7 @@ namespace GroupHStegafy.Controllers
         /// <param name="sourceImageFile">The source image file.</param>
         public async Task ReadOriginalImage(StorageFile sourceImageFile)
         {
-            this.OriginalImage = await this.readImage(sourceImageFile);
+            this.OriginalImage = await ImageUtilities.ReadImage(sourceImageFile);
         }
 
         /// <summary>
@@ -67,7 +66,7 @@ namespace GroupHStegafy.Controllers
         /// <param name="sourceImageFile">The source image file.</param>
         public async Task ReadSecretImage(StorageFile sourceImageFile)
         {
-            this.SecretImage = await this.readImage(sourceImageFile);
+            this.SecretImage = await ImageUtilities.ReadImage(sourceImageFile);
         }
 
         /// <summary>
@@ -76,42 +75,7 @@ namespace GroupHStegafy.Controllers
         /// <param name="sourStorageFile">The sour storage file.</param>
         public async Task ReadModifiedImage(StorageFile sourStorageFile)
         {
-            this.ModifiedImage = await this.readImage(sourStorageFile);
-        }
-
-        private async Task<WriteableBitmap> readImage(StorageFile sourceImageFile)
-        {
-            if (!sourceImageFile.IsAvailable)
-            {
-                throw new ArgumentException("Invalid File.");
-            }
-
-            var copyBitmapImage = await makeACopyOfTheFileToWorkOn(sourceImageFile);
-
-            using var fileStream = await sourceImageFile.OpenAsync(FileAccessMode.Read);
-
-            var decoder = await BitmapDecoder.CreateAsync(fileStream);
-            var transform = new BitmapTransform {
-                ScaledWidth = Convert.ToUInt32(copyBitmapImage.PixelWidth),
-                ScaledHeight = Convert.ToUInt32(copyBitmapImage.PixelHeight)
-            };
-
-            var image = new WriteableBitmap((int) decoder.PixelWidth, (int) decoder.PixelHeight);
-
-            var pixelData = await decoder.GetPixelDataAsync(
-                BitmapPixelFormat.Bgra8,
-                BitmapAlphaMode.Straight,
-                transform,
-                ExifOrientationMode.IgnoreExifOrientation,
-                ColorManagementMode.DoNotColorManage
-            );
-
-            var sourcePixels = pixelData.DetachPixelData();
-
-            using var writeStream = image.PixelBuffer.AsStream();
-            await writeStream.WriteAsync(sourcePixels, 0, sourcePixels.Length);
-
-            return image;
+            this.ModifiedImage = await ImageUtilities.ReadImage(sourStorageFile);
         }
 
         /// <summary>
@@ -128,8 +92,8 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task EmbedSecretImage()
         {
-            var secretImageData = await this.getImageData(this.SecretImage);
-            var originalImageData = await this.getImageData(this.OriginalImage);
+            var secretImageData = await ImageUtilities.GetImageData(this.SecretImage);
+            var originalImageData = await ImageUtilities.GetImageData(this.OriginalImage);
 
             var imageEncoder = new ImageEncoder();
 
@@ -151,7 +115,7 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task ExtractSecretImage()
         {
-            var modifiedImageData = await this.getImageData(this.ModifiedImage);
+            var modifiedImageData = await ImageUtilities.GetImageData(this.ModifiedImage);
 
             if (HeaderUtilities.IsMessageEmbedded(modifiedImageData, this.ModifiedImage.PixelWidth) 
                 && HeaderUtilities.GetMessageType(modifiedImageData, this.ModifiedImage.PixelWidth) == MessageType.MonochromeBmp)
@@ -177,7 +141,7 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task EmbedSecretMessage()
         {
-            var originalImageData = await this.getImageData(this.OriginalImage);
+            var originalImageData = await ImageUtilities.GetImageData(this.OriginalImage);
 
             var textEncoder = new TextEncoder();
 
@@ -197,7 +161,7 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task ExtractSecretMessage()
         {
-            var modifiedImageData = await this.getImageData(this.ModifiedImage);
+            var modifiedImageData = await ImageUtilities.GetImageData(this.ModifiedImage);
             if (HeaderUtilities.IsMessageEmbedded(modifiedImageData, this.ModifiedImage.PixelWidth)
                 && HeaderUtilities.GetMessageType(modifiedImageData, this.ModifiedImage.PixelWidth) == MessageType.Text)
             {
@@ -217,7 +181,7 @@ namespace GroupHStegafy.Controllers
         /// <returns></returns>
         public async Task<MessageType> GetSecretType()
         {
-            return HeaderUtilities.GetMessageType(await this.getImageData(this.ModifiedImage), this.ModifiedImage.PixelWidth);
+            return HeaderUtilities.GetMessageType(await ImageUtilities.GetImageData(this.ModifiedImage), this.ModifiedImage.PixelWidth);
         }
 
         /// <summary>
@@ -230,7 +194,7 @@ namespace GroupHStegafy.Controllers
                 return;
             }
 
-            var encryptedModifiedImageData = ImageEncoder.EncryptImageData(await this.getImageData(this.ModifiedImage),
+            var encryptedModifiedImageData = ImageEncoder.EncryptImageData(await ImageUtilities.GetImageData(this.ModifiedImage),
                 this.ModifiedImage.PixelWidth);
 
             this.EncryptedModifiedImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
@@ -280,23 +244,6 @@ namespace GroupHStegafy.Controllers
         public async Task SaveSecretMessageToTextFile(StorageFile saveFile)
         {
             await FileIO.WriteTextAsync(saveFile, this.SecretMessage);
-        }
-
-        private static async Task<BitmapImage> makeACopyOfTheFileToWorkOn(StorageFile imageFile)
-        {
-            IRandomAccessStream inputStream = await imageFile.OpenReadAsync();
-            var newImage = new BitmapImage();
-            newImage.SetSource(inputStream);
-            return newImage;
-        }
-
-        private async Task<byte[]> getImageData(WriteableBitmap bitmap)
-        {
-            using var stream = bitmap.PixelBuffer.AsStream();
-            var imageData = new byte[(uint) stream.Length];
-            await stream.ReadAsync(imageData, 0, imageData.Length);
-
-            return imageData;
         }
 
     }

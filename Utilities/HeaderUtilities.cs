@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Threading.Tasks;
 using Windows.Storage;
 using GroupHStegafy.Model;
 
@@ -133,9 +134,16 @@ namespace GroupHStegafy.Utilities
         /// <returns>
         ///   <c>true</c> if [is image file] [the specified file]; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsImageFile(StorageFile file)
+        public static async Task<bool> IsImageFile(StorageFile file)
         {
-            //TODO: Implement
+            try
+            {
+                await ImageUtilities.ReadImage(file);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
             return true;
         }
 
