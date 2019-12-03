@@ -30,11 +30,6 @@ namespace GroupHStegafy.Controllers
         public WriteableBitmap ModifiedImage;
 
         /// <summary>
-        ///     The encrypted modified image
-        /// </summary>
-        public WriteableBitmap EncryptedModifiedImage;
-
-        /// <summary>
         ///     The secret message
         /// </summary>
         public string SecretMessage;
@@ -47,7 +42,6 @@ namespace GroupHStegafy.Controllers
             this.OriginalImage = null;
             this.SecretImage = null;
             this.ModifiedImage = null;
-            this.EncryptedModifiedImage = null;
             this.SecretMessage = null;
         }
 
@@ -187,20 +181,22 @@ namespace GroupHStegafy.Controllers
         /// <summary>
         ///     Encrypts the modified image.
         /// </summary>
-        public async Task EncryptModifiedImage()
+        public async Task EncryptSecretImage()
         {
             if (this.ModifiedImage == null)
             {
                 return;
             }
 
-            var encryptedModifiedImageData = ImageEncoder.EncryptImageData(await ImageUtilities.GetImageData(this.ModifiedImage),
-                this.ModifiedImage.PixelWidth);
+            var encryptedModifiedImageData = ImageEncoder.EncryptImageData(await ImageUtilities.GetImageData(this.SecretImage),
+                this.SecretImage.PixelWidth);
 
-            this.EncryptedModifiedImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
+            this.SecretImage = new WriteableBitmap(this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
 
-            using var writeStream = this.EncryptedModifiedImage.PixelBuffer.AsStream();
+            using var writeStream = this.SecretImage.PixelBuffer.AsStream();
             await writeStream.WriteAsync(encryptedModifiedImageData, 0, encryptedModifiedImageData.Length);
+
+            await this.EmbedSecretImage();
         }
 
         /// <summary>
@@ -217,10 +213,8 @@ namespace GroupHStegafy.Controllers
             }
 
             var imageToSave = this.OriginalImage == null 
-                ? this.SecretImage 
-                : saveEncrypted 
-                    ? this.EncryptedModifiedImage 
-                    : this.ModifiedImage;
+                ? this.SecretImage
+                : this.ModifiedImage;
 
             var stream = await saveFile.OpenAsync(FileAccessMode.ReadWrite);
             var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);

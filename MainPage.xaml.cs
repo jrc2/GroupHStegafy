@@ -322,12 +322,13 @@ namespace GroupHStegafy
 
         private async void encryptCheckbox_OnChecked(object sender, RoutedEventArgs e)
         {
-            await this.stegafyManager.EncryptModifiedImage();
-            this.modifiedImageDisplay.Source = this.stegafyManager.EncryptedModifiedImage;
+            await this.stegafyManager.EncryptSecretImage();
+            this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
         }
 
-        private void encryptCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
+        private async void encryptCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
         {
+            await this.stegafyManager.EncryptSecretImage();
             this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
         }
     }
