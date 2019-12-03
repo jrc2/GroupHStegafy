@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using GroupHStegafy.Utilities;
 
 namespace GroupHStegafy.Model
@@ -85,13 +87,16 @@ namespace GroupHStegafy.Model
         }
 
         /// <summary>
-        ///     Encrypts the modified image.
+        ///     Swaps the top and bottom halves of image data.
         /// </summary>
-        public static byte[] EncryptImageData(byte[] modifiedImageBytes, int modifiedImageWidth)
+        public static byte[] SwapImageHalves(byte[] imageBytes)
         {
-            //TODO: Implement
-            Array.Reverse(modifiedImageBytes);
-            return modifiedImageBytes;
+            var firstHalf = imageBytes.Take(imageBytes.Length / 2);
+            var secondHalf = imageBytes.Skip(imageBytes.Length / 2) .Take(imageBytes.Length / 2);
+            var encryptedImageBytes = new List<byte>();
+            encryptedImageBytes.AddRange(secondHalf);
+            encryptedImageBytes.AddRange(firstHalf);
+            return encryptedImageBytes.ToArray();
         }
 
         private bool isInsignificantBit(byte insignificantBit)

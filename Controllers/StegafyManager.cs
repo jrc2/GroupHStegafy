@@ -33,7 +33,7 @@ namespace GroupHStegafy.Controllers
         /// <summary>
         ///     The encrypted modified image
         /// </summary>
-        public WriteableBitmap EncryptedModifiedImage;
+        public WriteableBitmap EncryptedSecretImage;
 
         /// <summary>
         ///     The secret message
@@ -48,7 +48,7 @@ namespace GroupHStegafy.Controllers
             this.OriginalImage = null;
             this.SecretImage = null;
             this.ModifiedImage = null;
-            this.EncryptedModifiedImage = null;
+            this.EncryptedSecretImage = null;
             this.SecretMessage = null;
         }
 
@@ -223,20 +223,19 @@ namespace GroupHStegafy.Controllers
         /// <summary>
         ///     Encrypts the modified image.
         /// </summary>
-        public async Task EncryptModifiedImage()
+        public async Task EncryptSecretImage()
         {
-            if (this.ModifiedImage == null)
+            if (this.SecretImage == null)
             {
                 return;
             }
 
-            var encryptedModifiedImageData = ImageEncoder.EncryptImageData(await this.getImageData(this.ModifiedImage),
-                this.ModifiedImage.PixelWidth);
+            var encryptedSecretImageData = ImageEncoder.SwapImageHalves(await this.getImageData(this.SecretImage));
 
-            this.EncryptedModifiedImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
+            this.EncryptedSecretImage = new WriteableBitmap(this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
 
-            using var writeStream = this.EncryptedModifiedImage.PixelBuffer.AsStream();
-            await writeStream.WriteAsync(encryptedModifiedImageData, 0, encryptedModifiedImageData.Length);
+            using var writeStream = this.EncryptedSecretImage.PixelBuffer.AsStream();
+            await writeStream.WriteAsync(encryptedSecretImageData, 0, encryptedSecretImageData.Length);
         }
 
         /// <summary>
@@ -255,7 +254,7 @@ namespace GroupHStegafy.Controllers
             var imageToSave = this.OriginalImage == null 
                 ? this.SecretImage 
                 : saveEncrypted 
-                    ? this.EncryptedModifiedImage 
+                    ? this.EncryptedSecretImage 
                     : this.ModifiedImage;
 
             var stream = await saveFile.OpenAsync(FileAccessMode.ReadWrite);
