@@ -89,7 +89,7 @@ namespace GroupHStegafy
                 return;
             }
 
-            if (await this.stegafyManager.GetSecretMessageType() == MessageType.MonochromeBmp)
+            if (await this.stegafyManager.GetSecretType() == MessageType.MonochromeBmp)
             {
                 await this.extractSecretImage();
                 if (this.stegafyManager.SecretImage == null)
@@ -139,10 +139,11 @@ namespace GroupHStegafy
                 this.secretImageDisplay.Visibility = Visibility.Visible;
                 this.secretImageDisplay.Source = this.stegafyManager.SecretImage;
                 this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
+                this.embedSecretMessageButton.IsEnabled = false;
             }
             else
             {
-                await this.embedSecretMessageFromFile(sourceSecretFile);
+                await this.stegafyManager.ReadSecretMessageFromTextFile(sourceSecretFile);
                 if (this.stegafyManager.SecretMessage == null)
                 {
                     return;
@@ -152,7 +153,6 @@ namespace GroupHStegafy
                 this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
             }
 
-            this.embedSecretMessageButton.IsEnabled = false;
             this.saveButton.IsEnabled = true;
             this.encryptCheckbox.IsEnabled = true;
         }
@@ -163,7 +163,7 @@ namespace GroupHStegafy
             {
                 return;
             }
-            await this.embedSecretMessage(this.secretMessageTextBlock.Text);
+            await this.embedSecretMessage();
 
             if (this.stegafyManager.ModifiedImage != null)
             {
@@ -200,22 +200,8 @@ namespace GroupHStegafy
             }
         }
 
-        private async Task embedSecretMessage(string message)
+        private async Task embedSecretMessage()
         {
-            this.stegafyManager.SecretMessage = message;
-            try
-            {
-                await this.stegafyManager.EmbedSecretMessage();
-            }
-            catch (ArgumentException exception)
-            {
-                this.displayErrorMessage(exception.Message);
-            }
-        }
-
-        private async Task embedSecretMessageFromFile(StorageFile sourceTextFile)
-        {
-            await this.stegafyManager.ReadSecretMessage(sourceTextFile);
             try
             {
                 await this.stegafyManager.EmbedSecretMessage();
@@ -290,7 +276,7 @@ namespace GroupHStegafy
                 var saveFile = await selectSaveTextFile();
                 if (saveFile != null)
                 {
-                    await this.stegafyManager.SaveTextFile(saveFile);
+                    await this.stegafyManager.SaveSecretMessageToTextFile(saveFile);
                 }
             }
             

@@ -29,7 +29,7 @@ namespace GroupHStegafy.Utilities
 
             ImageUtilities.ChangePixelColor(imageData, 0, 0, imageWidth, Color.FromArgb(212, 212, 212));
 
-            var offset = ImageUtilities.CalculateOffset(1, 0, imageWidth);
+            var offset = ImageUtilities.CalculateByteOffset(1, 0, imageWidth);
             imageData[offset + ImageUtilities.PixelColorByteOffset(PixelColor.Green)] = (byte)bpcc;
 
             var secondPixelRedByte = ImageUtilities.GetByteForColor(imageData, 1, 0, imageWidth, PixelColor.Red);
@@ -126,10 +126,35 @@ namespace GroupHStegafy.Utilities
             return color == Color.FromArgb(212, 212, 212);
         }
 
+        /// <summary>
+        /// Determines whether a file is an image file that can be used for Steganography
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns>
+        ///   <c>true</c> if [is image file] [the specified file]; otherwise, <c>false</c>.
+        /// </returns>
         public static bool IsImageFile(StorageFile file)
         {
             //TODO: Implement
             return true;
+        }
+
+        /// <summary>
+        /// Gets the bits per color channel.
+        /// </summary>
+        /// <param name="imageData">The image data.</param>
+        /// <param name="width">The image width.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException">width - must be at least 1</exception>
+        public static int GetBitsPerColorChannel(byte[] imageData, int width)
+        {
+            if (width < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width), "must be at least 1");
+            }
+
+            var offset = ImageUtilities.CalculateByteOffset(1, 0, width);
+            return imageData[offset + ImageUtilities.PixelColorByteOffset(PixelColor.Green)];
         }
     }
 

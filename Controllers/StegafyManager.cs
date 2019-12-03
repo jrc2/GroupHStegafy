@@ -35,6 +35,9 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public WriteableBitmap EncryptedModifiedImage;
 
+        /// <summary>
+        ///     The secret message
+        /// </summary>
         public string SecretMessage;
 
         /// <summary>
@@ -111,10 +114,13 @@ namespace GroupHStegafy.Controllers
             return image;
         }
 
-        public async Task ReadSecretMessage(StorageFile sourceTextFile)
+        /// <summary>
+        ///     Reads the secret message from text file.
+        /// </summary>
+        /// <param name="sourceTextFile">The source text file.</param>
+        public async Task ReadSecretMessageFromTextFile(StorageFile sourceTextFile)
         {
-            //TODO: Implement
-            this.SecretMessage = sourceTextFile.Path;
+            this.SecretMessage = await FileIO.ReadTextAsync(sourceTextFile);
         }
 
         /// <summary>
@@ -171,8 +177,19 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task EmbedSecretMessage()
         {
-            //TODO Implement
-            throw new ArgumentException("Not Implemented");
+            var originalImageData = await this.getImageData(this.OriginalImage);
+
+            var textEncoder = new TextEncoder();
+
+            var modifiedImageData = textEncoder.EncodeMessage(originalImageData, this.SecretMessage);
+
+            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false, 1,
+                MessageType.MonochromeBmp);
+
+            this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
+
+            using var writeStream = this.ModifiedImage.PixelBuffer.AsStream();
+            await writeStream.WriteAsync(modifiedImageData, 0, modifiedImageData.Length);
         }
 
         /// <summary>
@@ -184,22 +201,35 @@ namespace GroupHStegafy.Controllers
             if (HeaderUtilities.IsMessageEmbedded(modifiedImageData, this.ModifiedImage.PixelWidth)
                 && HeaderUtilities.GetMessageType(modifiedImageData, this.ModifiedImage.PixelWidth) == MessageType.Text)
             {
-                //TODO: Implement
-                this.SecretMessage = "test secret message.";
+                var textEncoder = new TextEncoder();
+
+                this.SecretMessage = textEncoder.DecodeMessage(modifiedImageData);
             }
             else
             {
-                throw new ArgumentException("Modified Image doesn't contain Secret Image");
+                throw new ArgumentException("Modified Image doesn't contain Secret Text Message");
             }
         }
 
-        public async Task<MessageType> GetSecretMessageType()
+        /// <summary>
+        ///     Gets the type of the secret message.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<MessageType> GetSecretType()
         {
             return HeaderUtilities.GetMessageType(await this.getImageData(this.ModifiedImage), this.ModifiedImage.PixelWidth);
         }
 
+        /// <summary>
+        ///     Encrypts the modified image.
+        /// </summary>
         public async Task EncryptModifiedImage()
         {
+            if (this.ModifiedImage == null)
+            {
+                return;
+            }
+
             var encryptedModifiedImageData = ImageEncoder.EncryptImageData(await this.getImageData(this.ModifiedImage),
                 this.ModifiedImage.PixelWidth);
 
@@ -243,10 +273,13 @@ namespace GroupHStegafy.Controllers
             stream.Dispose();
         }
 
-        public async Task SaveTextFile(StorageFile saveFile)
+        /// <summary>
+        ///     Saves the secret message to a text file.
+        /// </summary>
+        /// <param name="saveFile">The save file.</param>
+        public async Task SaveSecretMessageToTextFile(StorageFile saveFile)
         {
-            //TODO Implement
-            throw new ArgumentException("Not Implemented");
+            await FileIO.WriteTextAsync(saveFile, this.SecretMessage);
         }
 
         private static async Task<BitmapImage> makeACopyOfTheFileToWorkOn(StorageFile imageFile)
