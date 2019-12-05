@@ -161,7 +161,7 @@ namespace GroupHStegafy.Controllers
             {
                 var textEncoder = new TextEncoder();
 
-                this.SecretMessage = textEncoder.DecodeMessage(modifiedImageData);
+                this.SecretMessage = textEncoder.DecodeMessage(modifiedImageData, this.ModifiedImage.PixelHeight, this.ModifiedImage.PixelWidth);
             }
             else
             {

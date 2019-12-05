@@ -53,6 +53,19 @@ namespace GroupHStegafy.Utilities
             return imageData[offset + PixelColorByteOffset(pixelColor)];
         }
 
+        public static byte[] GetPixelBytes(byte[] imageData, int x, int y, int width)
+        {
+            var pixelData = new byte[4];
+
+            var offset = CalculateByteOffset(x, y, width);
+            pixelData[0] = imageData[offset];
+            pixelData[1] = imageData[offset + 1];
+            pixelData[2] = imageData[offset + 2];
+            pixelData[3] = imageData[offset + 3];
+
+            return pixelData;
+        }
+
         /// <summary>
         ///     Calculates the offset.
         /// </summary>
