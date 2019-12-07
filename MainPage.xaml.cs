@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -55,7 +56,7 @@ namespace GroupHStegafy
 
             if (this.stegafyManager.SecretImage != null)
             {
-                await this.stegafyManager.EmbedSecretImage();
+                await this.stegafyManager.EmbedSecretImage(false);
                 this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
             }
 
@@ -183,7 +184,7 @@ namespace GroupHStegafy
             await this.stegafyManager.ReadSecretImage(sourceImageFile);
             try
             {
-                await this.stegafyManager.EmbedSecretImage();
+                await this.stegafyManager.EmbedSecretImage(false);
             }
             catch (ArgumentException exception)
             {
@@ -330,7 +331,7 @@ namespace GroupHStegafy
         private async void encryptCheckbox_OnChecked(object sender, RoutedEventArgs e)
         {
             await this.stegafyManager.EncryptSecretImage();
-            await this.stegafyManager.EmbedSecretImage();
+            await this.stegafyManager.EmbedSecretImage(true);
             this.modifiedImageDisplay.Source = this.stegafyManager.EncryptedSecretImage;
         }
 
@@ -338,7 +339,11 @@ namespace GroupHStegafy
         {
             await this.stegafyManager.EncryptSecretImage();
             this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
-            await this.stegafyManager.EmbedSecretImage();
+        }
+
+        private async void reloadButton_Click(object sender, RoutedEventArgs e)
+        {
+            await CoreApplication.RequestRestartAsync("");
         }
     }
 }

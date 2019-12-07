@@ -32,5 +32,6 @@
         <CheckBox x:Name="encryptCheckbox" Content="Encrypt" Margin="20,405,0,0" VerticalAlignment="Top" IsEnabled="False" Checked="encryptCheckbox_OnChecked" Unchecked="encryptCheckbox_OnUnchecked"/>
         <TextBox x:Name="bitsPerColorChannelTextBox" HorizontalAlignment="Left" Margin="64,193,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="77" IsEnabled="False"/>
         <TextBlock HorizontalAlignment="Left" Margin="22,201,0,0" Text="BPCC:" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Button x:Name="reloadButton" Content="Reload" Margin="106,371,0,0" VerticalAlignment="Top" Click="reloadButton_Click"/>
     </Grid>
 </Page>

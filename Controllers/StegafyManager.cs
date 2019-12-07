@@ -20,7 +20,7 @@ namespace GroupHStegafy.Controllers
         public WriteableBitmap OriginalImage;
 
         /// <summary>
-        ///     The secret message to be embeded into the original image.
+        ///     The secret message to be embedded into the original image.
         /// </summary>
         public WriteableBitmap SecretImage;
 
@@ -90,7 +90,7 @@ namespace GroupHStegafy.Controllers
         /// <summary>
         ///     Embeds the secret image in the OriginalImage.
         /// </summary>
-        public async Task EmbedSecretImage()
+        public async Task EmbedSecretImage(bool encrypt)
         {
             var secretImageData = this.EncryptedSecretImage != null
                 ? await ImageUtilities.GetImageData(this.EncryptedSecretImage)
@@ -99,16 +99,25 @@ namespace GroupHStegafy.Controllers
             var originalImageData = await ImageUtilities.GetImageData(this.OriginalImage);
 
             var imageEncoder = new ImageEncoder();
+            byte[] modifiedImageData;
 
-            var modifiedImageData =
-                imageEncoder.EncodeImage(originalImageData, this.OriginalImage.PixelWidth, 
-                    secretImageData, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
+            if (encrypt)
+            {
+                modifiedImageData =
+                    imageEncoder.EncodeImage(originalImageData, this.OriginalImage.PixelWidth,
+                        secretImageData, this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
+            }
+            else
+            {
+                modifiedImageData =
+                    imageEncoder.EncodeImage(originalImageData, this.OriginalImage.PixelWidth,
+                        secretImageData, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
+            }
 
-            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false, 1,
+            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false, 1, //TODO change false to encrypt property
                 MessageType.MonochromeBmp);
 
             this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
-
             using var writeStream = this.ModifiedImage.PixelBuffer.AsStream();
             await writeStream.WriteAsync(modifiedImageData, 0, modifiedImageData.Length);
         }
@@ -226,7 +235,7 @@ namespace GroupHStegafy.Controllers
             var imageToSave = this.OriginalImage == null 
                 ? this.SecretImage 
                 : saveEncrypted 
-                    ? this.EncryptedSecretImage //TODO use EncryptedModifiedImage
+                    ? this.ModifiedImage //TODO remove branches
                     : this.ModifiedImage;
 
             var stream = await saveFile.OpenAsync(FileAccessMode.ReadWrite);
