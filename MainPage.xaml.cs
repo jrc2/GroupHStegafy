@@ -130,7 +130,7 @@ namespace GroupHStegafy
                 {
                     this.encryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
                     this.encryptedSecretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
-                    this.stegafyManager.DecryptSecretMessage();
+                    this.stegafyManager.DecryptSecretMessage(this.cipherWordTextBox.Text);
                 }
 
                 this.unencryptedSecretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
@@ -379,7 +379,7 @@ namespace GroupHStegafy
             }
             else
             {
-                this.stegafyManager.DecryptSecretMessage();
+                this.stegafyManager.DecryptSecretMessage(this.cipherWordTextBox.Text);
                 this.encryptedSecretMessageTextBlock.Visibility = Visibility.Collapsed;
             }
             
