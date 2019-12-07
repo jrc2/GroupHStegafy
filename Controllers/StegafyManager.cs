@@ -114,7 +114,7 @@ namespace GroupHStegafy.Controllers
                         secretImageData, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
             }
 
-            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false, 1, //TODO change false to encrypt property
+            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, encrypt, 1,
                 MessageType.MonochromeBmp);
 
             this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
