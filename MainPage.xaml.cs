@@ -62,6 +62,8 @@ namespace GroupHStegafy
 
             this.openSecretFileButton.IsEnabled = true;
             this.unencryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
+            this.cipherWordTextBlock.Visibility = Visibility.Visible;
+            this.cipherWordTextBox.Visibility = Visibility.Visible;
             this.bitsPerColorChannelTextBox.IsEnabled = true;
             this.embedSecretMessageButton.IsEnabled = true;
             this.openModifiedImageButton.IsEnabled = false;
@@ -70,6 +72,7 @@ namespace GroupHStegafy
         private async void openModifiedImageButton_Click(object sender, RoutedEventArgs e)
         {
             this.clearErrorMessage();
+
             if (this.stegafyManager.OriginalImage != null)
             {
                 return;
@@ -100,10 +103,16 @@ namespace GroupHStegafy
                 }
 
                 this.unencryptedSecretMessageTextBlock.Visibility = Visibility.Collapsed;
+                this.encryptedSecretMessageTextBlock.Visibility = Visibility.Collapsed;
                 this.unencryptedSecretImageDisplay.Visibility = Visibility.Visible;
+
+                if (await this.stegafyManager.IsModifiedImageSecretEncrypted())
+                {
+                    this.encryptedSecretImageDisplay.Visibility = Visibility.Visible;
+                    this.encryptedSecretImageDisplay.Source = this.stegafyManager.EncryptedSecretImage;
+                }
+
                 this.unencryptedSecretImageDisplay.Source = this.stegafyManager.SecretImage;
-                this.encryptedSecretImageDisplay.Visibility = Visibility.Visible;
-                this.encryptedSecretImageDisplay.Source = this.stegafyManager.EncryptedSecretImage;
             }
             else
             {
@@ -114,8 +123,18 @@ namespace GroupHStegafy
                 }
 
                 this.unencryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
-                this.unencryptedSecretMessageTextBlock.IsReadOnly = true;
+                this.unencryptedSecretImageDisplay.Visibility = Visibility.Collapsed;
+                this.encryptedSecretImageDisplay.Visibility = Visibility.Collapsed;
+
+                if (await this.stegafyManager.IsModifiedImageSecretEncrypted())
+                {
+                    this.encryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
+                    this.encryptedSecretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
+                    this.stegafyManager.DecryptSecretMessage();
+                }
+
                 this.unencryptedSecretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
+                this.unencryptedSecretMessageTextBlock.IsReadOnly = true;
             }
 
             this.openOriginalImageButton.IsEnabled = false;
@@ -200,6 +219,7 @@ namespace GroupHStegafy
             try
             {
                 await this.stegafyManager.ExtractSecretImage();
+                this.stegafyManager.SecretMessage = null;
             }
             catch (ArgumentException exception)
             {
@@ -229,6 +249,7 @@ namespace GroupHStegafy
             try
             {
                 await this.stegafyManager.ExtractSecretMessage();
+                this.stegafyManager.SecretImage = null;
             }
             catch (ArgumentException exception)
             {
@@ -333,16 +354,36 @@ namespace GroupHStegafy
 
         private async void encryptCheckbox_OnChecked(object sender, RoutedEventArgs e)
         {
-            await this.stegafyManager.EncryptSecretImage();
-            await this.stegafyManager.EmbedSecretImage(true);
-            this.encryptedSecretImageDisplay.Visibility = Visibility.Visible;
-            this.encryptedSecretImageDisplay.Source = this.stegafyManager.EncryptedSecretImage;
+            if (this.stegafyManager.SecretMessage == null)
+            {
+                await this.stegafyManager.EncryptSecretImage();
+                await this.stegafyManager.EmbedSecretImage(true);
+                this.encryptedSecretImageDisplay.Visibility = Visibility.Visible;
+                this.encryptedSecretImageDisplay.Source = this.stegafyManager.EncryptedSecretImage;
+            }
+            else
+            {
+                this.stegafyManager.EncryptSecretMessage();
+                //TODO Call this.stegafyManager.EmbedSecretMessage(true);
+                this.encryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
+                this.encryptedSecretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
+            }
+            
         }
 
         private async void encryptCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
         {
-            await this.stegafyManager.EncryptSecretImage();
-            this.encryptedSecretImageDisplay.Visibility = Visibility.Collapsed;
+            if (this.stegafyManager.SecretMessage == null)
+            {
+                await this.stegafyManager.EncryptSecretImage();
+                this.encryptedSecretImageDisplay.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                this.stegafyManager.DecryptSecretMessage();
+                this.encryptedSecretMessageTextBlock.Visibility = Visibility.Collapsed;
+            }
+            
         }
 
         private async void reloadButton_Click(object sender, RoutedEventArgs e)
