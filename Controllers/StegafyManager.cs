@@ -154,19 +154,14 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task EmbedSecretMessage(int bitsPerColorChannel)
         {
-            if (bitsPerColorChannel > 0 || bitsPerColorChannel <= 8)
-            {
-                throw new ArgumentException("Invalid bitsPerColorChannel");
-            }
-
             var originalImageData = await ImageUtilities.GetImageData(this.OriginalImage);
 
             var textEncoder = new TextEncoder(bitsPerColorChannel);
 
             var modifiedImageData = textEncoder.EncodeMessage(originalImageData, this.SecretMessage);
 
-            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false, 1,
-                MessageType.MonochromeBmp);
+            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false, bitsPerColorChannel,
+                MessageType.Text);
 
             this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
 
@@ -249,6 +244,17 @@ namespace GroupHStegafy.Controllers
             await encoder.FlushAsync();
 
             stream.Dispose();
+        }
+
+        /// <summary>
+        ///     Determines if the file to save is a text file.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is save file text]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsSaveFileText()
+        {
+            return this.SecretMessage != null && this.OriginalImage == null;
         }
 
         /// <summary>

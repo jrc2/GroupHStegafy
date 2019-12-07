@@ -209,6 +209,7 @@ namespace GroupHStegafy
         {
             try
             {
+                this.stegafyManager.SecretMessage = this.unencryptedSecretMessageTextBlock.Text;
                 if (int.TryParse(this.bitsPerColorChannelTextBox.Text, out var bitsPerColorChannel))
                 {
                     await this.stegafyManager.EmbedSecretMessage(bitsPerColorChannel);
@@ -271,20 +272,20 @@ namespace GroupHStegafy
                 return;
             }
 
-            if (this.stegafyManager.SecretMessage == null)
-            {
-                var saveFile = await selectSaveImageFile();
-                if (saveFile != null && this.encryptCheckbox.IsChecked.HasValue)
-                {
-                    await this.stegafyManager.SaveImage(saveFile);
-                }
-            }
-            else
+            if (this.stegafyManager.IsSaveFileText())
             {
                 var saveFile = await selectSaveTextFile();
                 if (saveFile != null)
                 {
                     await this.stegafyManager.SaveSecretMessageToTextFile(saveFile);
+                }
+            }
+            else
+            {
+                var saveFile = await selectSaveImageFile();
+                if (saveFile != null && this.encryptCheckbox.IsChecked.HasValue)
+                {
+                    await this.stegafyManager.SaveImage(saveFile);
                 }
             }
             
