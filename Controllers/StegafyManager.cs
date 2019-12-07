@@ -92,15 +92,10 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task EmbedSecretImage()
         {
-            byte[] secretImageData;
-            if (this.EncryptedSecretImage != null)
-            {
-                secretImageData = await ImageUtilities.GetImageData(this.EncryptedSecretImage);
-            }
-            else
-            {
-                secretImageData = await ImageUtilities.GetImageData(this.SecretImage);
-            }
+            var secretImageData = this.EncryptedSecretImage != null
+                ? await ImageUtilities.GetImageData(this.EncryptedSecretImage)
+                : await ImageUtilities.GetImageData(this.SecretImage);
+
             var originalImageData = await ImageUtilities.GetImageData(this.OriginalImage);
 
             var imageEncoder = new ImageEncoder();
@@ -147,11 +142,16 @@ namespace GroupHStegafy.Controllers
         /// <summary>
         ///     Embeds the secret text message.
         /// </summary>
-        public async Task EmbedSecretMessage()
+        public async Task EmbedSecretMessage(int bitsPerColorChannel)
         {
+            if (bitsPerColorChannel > 0 || bitsPerColorChannel <= 8)
+            {
+                throw new ArgumentException("Invalid bitsPerColorChannel");
+            }
+
             var originalImageData = await ImageUtilities.GetImageData(this.OriginalImage);
 
-            var textEncoder = new TextEncoder();
+            var textEncoder = new TextEncoder(bitsPerColorChannel);
 
             var modifiedImageData = textEncoder.EncodeMessage(originalImageData, this.SecretMessage);
 
@@ -173,9 +173,9 @@ namespace GroupHStegafy.Controllers
             if (HeaderUtilities.IsMessageEmbedded(modifiedImageData, this.ModifiedImage.PixelWidth)
                 && HeaderUtilities.GetMessageType(modifiedImageData, this.ModifiedImage.PixelWidth) == MessageType.Text)
             {
-                var textEncoder = new TextEncoder();
+                var textEncoder = new TextEncoder(HeaderUtilities.GetBitsPerColorChannel(modifiedImageData, this.ModifiedImage.PixelWidth));
 
-                this.SecretMessage = textEncoder.DecodeMessage(modifiedImageData, this.ModifiedImage.PixelHeight, this.ModifiedImage.PixelWidth);
+                this.SecretMessage = textEncoder.DecodeMessage(modifiedImageData);
             }
             else
             {

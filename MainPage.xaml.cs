@@ -61,6 +61,7 @@ namespace GroupHStegafy
 
             this.openSecretFileButton.IsEnabled = true;
             this.secretMessageTextBlock.Visibility = Visibility.Visible;
+            this.bitsPerColorChannelTextBox.IsEnabled = true;
             this.embedSecretMessageButton.IsEnabled = true;
             this.openModifiedImageButton.IsEnabled = false;
         }
@@ -108,6 +109,9 @@ namespace GroupHStegafy
                 {
                     return;
                 }
+
+                this.secretMessageTextBlock.Visibility = Visibility.Visible;
+                this.secretMessageTextBlock.IsReadOnly = true;
                 this.secretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
             }
 
@@ -204,7 +208,10 @@ namespace GroupHStegafy
         {
             try
             {
-                await this.stegafyManager.EmbedSecretMessage();
+                if (int.TryParse(this.bitsPerColorChannelTextBox.Text, out var bitsPerColorChannel))
+                {
+                    await this.stegafyManager.EmbedSecretMessage(bitsPerColorChannel);
+                }
             }
             catch (ArgumentException exception)
             {

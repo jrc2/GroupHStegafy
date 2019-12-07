@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Windows.UI.Xaml.Controls;
 using GroupHStegafy.Utilities;
 
 namespace GroupHStegafy.Model
@@ -13,7 +9,21 @@ namespace GroupHStegafy.Model
     /// </summary>
     public class TextEncoder
     {
-        private const int bpcc = 2;
+        private readonly int bitsPerColorChannel;
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="TextEncoder"/> class.
+        /// </summary>
+        /// <param name="bitsPerColorChannel">The bits per color channel.</param>
+        /// <exception cref="ArgumentException">Invalid BitsPerColorChannel</exception>
+        public TextEncoder(int bitsPerColorChannel)
+        {
+            if (bitsPerColorChannel < 0 || bitsPerColorChannel > 8)
+            {
+                throw new ArgumentException("Invalid BitsPerColorChannel");
+            }
+            this.bitsPerColorChannel = bitsPerColorChannel;
+        }
 
         /// <summary>
         ///     Encodes the message.
@@ -32,25 +42,49 @@ namespace GroupHStegafy.Model
         /// <param name="modifiedImageBytes">The modified image bytes.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">Not Implemented</exception>
-        public string DecodeMessage(byte[] modifiedImageBytes, int modifiedImageHeight, int modifiedImageWidth)
+        public string DecodeMessage(byte[] modifiedImageBytes)
         {
-            var leastSignificantBits = new List<bool>();
+            var secretMessage = "";
 
-            for (var y = 0; y < modifiedImageHeight; y++)
+            var charBits = new bool[8];
+            var bitCount = 0;
+            for (var i = 8; i < modifiedImageBytes.Length; i+=ImageUtilities.BytesPerPixel)
             {
-                for (var x = 0; x < modifiedImageWidth; x++)
+                for (int j = 2; j >= 0; j--)
                 {
-                    var currentPixelData = ImageUtilities.GetPixelBytes(modifiedImageBytes, x, y, modifiedImageWidth);
-                    foreach (var aByte in currentPixelData)
+                    foreach (var bit in this.getInsignificantBits(modifiedImageBytes[i + j]))
                     {
-                        leastSignificantBits.AddRange(convertByteToBoolArray(aByte).Skip(8-bpcc).Take(bpcc));
+                        charBits[bitCount] = bit;
+                        bitCount++;
+                        if (bitCount == 8)
+                        {
+                            var nextChar = Convert.ToChar(this.convertBoolArrayToByte(charBits));
+                            secretMessage += nextChar;
+                            bitCount = 0;
+                        }
+
+                        if (secretMessage.Contains("#.-.-.-#"))
+                        {
+                            return secretMessage.Replace("#.-.-.-#", "");
+                        }
                     }
                 }
             }
 
-            var stringData = convertBoolArrayToByteArray(leastSignificantBits.ToArray());
-            return Encoding.UTF8.GetString(stringData, 0, stringData.Length);
+            return "Secret Message could not be read.";
         }
+
+        private List<bool> getInsignificantBits(byte aByte)
+        {
+            var insignificantBits = new List<bool>();
+            var byteBits = this.convertByteToBoolArray(aByte);
+            for (var i = 7; i > 7 - this.bitsPerColorChannel; i--)
+            {
+                insignificantBits.Add(byteBits[i]);
+            }
+
+            return insignificantBits;
+        } 
 
         private bool[] convertByteToBoolArray(byte aByte)
         {
@@ -65,36 +99,22 @@ namespace GroupHStegafy.Model
             return result;
         }
 
-        private byte[] convertBoolArrayToByteArray(bool[] bits)
+        private byte convertBoolArrayToByte(bool[] boolArray)
         {
-            if (bits.Length % 8 != 0)
-            {
-                throw new ArgumentException("Invalid bits");
-            }
-            var byteArray = new byte[bits.Length / 8];
-            for (var i = 0; i < bits.Length; i+=8)
-            {
-                var newByteData = bits.Skip(i).Take(8).ToArray();
-                byteArray[i / 8] = ConvertBoolArrayToByte(newByteData);
-            }
-
-            return byteArray;
-        }
-
-        private static byte ConvertBoolArrayToByte(bool[] source)
-        {
-            if (source.Length != 8)
+            if (boolArray.Length != 8)
             {
                 throw new ArgumentException("Invalid byte data.");
             } 
 
             byte result = 0;
-            int index = 8 - source.Length;
+            var index = 0;
 
-            foreach (bool b in source)
+            foreach (var bit in boolArray)
             {
-                if (b)
+                if (bit)
+                {
                     result |= (byte)(1 << (7 - index));
+                }
 
                 index++;
             }

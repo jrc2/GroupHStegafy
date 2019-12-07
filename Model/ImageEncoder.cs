@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using Windows.UI.Xaml.Media.Imaging;
 using GroupHStegafy.Utilities;
 
 namespace GroupHStegafy.Model

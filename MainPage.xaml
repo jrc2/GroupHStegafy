@@ -23,12 +23,14 @@
         <Button x:Name="openOriginalImageButton" Content="Open Original Image" Margin="19,48,0,0" VerticalAlignment="Top" Click="openOriginalImageButton_Click" RenderTransformOrigin="0.137,-1.236"/>
         <Button x:Name="openSecretFileButton" Content="Open Secret File" Margin="19,99,0,0" VerticalAlignment="Top" Click="openSecretFileButton_Click" RenderTransformOrigin="0.137,-1.236" IsEnabled="False"/>
         <Button x:Name="embedSecretMessageButton" Content="Embed Message" Margin="19,150,0,0" VerticalAlignment="Top" IsEnabled="False" Click="embedSecretMessageButton_Click"/>
-        <Button x:Name="openModifiedImageButton" Content="Open Modified Image" Margin="20,202,0,0" VerticalAlignment="Top" Click="openModifiedImageButton_Click" RenderTransformOrigin="0.137,-1.236"/>
+        <Button x:Name="openModifiedImageButton" Content="Open Modified Image" Margin="20,244,0,0" VerticalAlignment="Top" Click="openModifiedImageButton_Click" RenderTransformOrigin="0.137,-1.236"/>
         <Button x:Name="saveButton" Content="Save" Margin="19,371,0,0" VerticalAlignment="Top" Click="saveButton_Click" IsEnabled="False"/>
         <TextBlock x:Name="errorTextBlock" HorizontalAlignment="Left" Margin="197,10,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="564" FontWeight="Bold" Foreground="Red"/>
         <TextBlock HorizontalAlignment="Left" Margin="329,408,0,0" Text="Original Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="744,410,0,0" Text="Secret" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="1104,414,0,0" Text="Modified Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <CheckBox x:Name="encryptCheckbox" Content="Encrypt" Margin="20,405,0,0" VerticalAlignment="Top" IsEnabled="False" Checked="encryptCheckbox_OnChecked" Unchecked="encryptCheckbox_OnUnchecked"/>
+        <TextBox x:Name="bitsPerColorChannelTextBox" HorizontalAlignment="Left" Margin="64,193,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="77" IsEnabled="False"/>
+        <TextBlock HorizontalAlignment="Left" Margin="22,201,0,0" Text="BPCC:" TextWrapping="Wrap" VerticalAlignment="Top"/>
     </Grid>
 </Page>
