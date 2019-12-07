@@ -230,6 +230,43 @@ namespace GroupHStegafy.Controllers
         }
 
         /// <summary>
+        ///     Encrypts the secret message.
+        /// </summary>
+        public void EncryptSecretMessage()
+        {
+            if (this.SecretMessage == null)
+            {
+                return;
+            }
+
+            //TODO Call encryptMessage in TextEncoder
+            this.SecretMessage = "Encrypted Secret Message.";
+        }
+
+        /// <summary>
+        ///     Decrypts the secret message.
+        /// </summary>
+        public void DecryptSecretMessage()
+        {
+            if (this.SecretMessage == null)
+            {
+                return;
+            }
+
+            //TODO Call decryptMessage in TextEncoder
+            this.SecretMessage = "Decrypted Secret Message.";
+        }
+
+        /// <summary>
+        ///     Determines whether [is modified image encrypted].
+        /// </summary>
+        /// <returns>True if the modified image is encrypted</returns>
+        public async Task<bool> IsModifiedImageSecretEncrypted()
+        {
+            return HeaderUtilities.IsEncrypted(await ImageUtilities.GetImageData(this.ModifiedImage), this.ModifiedImage.PixelWidth);
+        }
+
+        /// <summary>
         /// Saves the image.
         /// </summary>
         /// <param name="saveFile">The save file.</param>
