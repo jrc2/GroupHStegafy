@@ -102,6 +102,8 @@ namespace GroupHStegafy
                 this.unencryptedSecretMessageTextBlock.Visibility = Visibility.Collapsed;
                 this.unencryptedSecretImageDisplay.Visibility = Visibility.Visible;
                 this.unencryptedSecretImageDisplay.Source = this.stegafyManager.SecretImage;
+                this.encryptedSecretImageDisplay.Visibility = Visibility.Visible;
+                this.encryptedSecretImageDisplay.Source = this.stegafyManager.EncryptedSecretImage;
             }
             else
             {

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
@@ -216,6 +218,44 @@ namespace GroupHStegafy.Utilities
             await stream.ReadAsync(imageData, 0, imageData.Length);
 
             return imageData;
+        }
+
+        public static byte[] ExpandSecretImage(byte[] secretImageBytes, int originalImageWidth, int originalImageHeight,
+            int secretImageWidth, int secretImageHeight)
+        {
+            var expandedImageBytes = new byte[originalImageWidth * originalImageHeight * ImageUtilities.BytesPerPixel];
+
+            for (var y = 0; y < originalImageHeight; y++)
+            {
+                for (var x = 0; x < originalImageWidth; x++)
+                {
+                    ChangePixelColor(expandedImageBytes, x, y, originalImageWidth, Color.White);
+                }
+            }
+
+            for (var y = 0; y < secretImageHeight; y++)
+            {
+                for (var x = 0; x < secretImageWidth; x++)
+                {
+                    if (!IsPixelWhite(secretImageBytes, x, y, secretImageWidth))
+                    {
+                        ChangePixelColor(expandedImageBytes, x, y, originalImageWidth, Color.Black);
+                    }
+                }
+            }
+
+            return expandedImageBytes;
+        }
+
+        public static byte[] SwitchImageHalves(byte[] imageBytes)
+        {
+            var encryptedImage = new List<byte>();
+
+            var firstHalf = imageBytes.Take(imageBytes.Length / 2);
+            var secondHalf = imageBytes.Skip(imageBytes.Length / 2).Take(imageBytes.Length / 2);
+            encryptedImage.AddRange(secondHalf);
+            encryptedImage.AddRange(firstHalf);
+            return encryptedImage.ToArray();
         }
     }
 }

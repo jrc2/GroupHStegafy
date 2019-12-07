@@ -135,13 +135,27 @@ namespace GroupHStegafy.Controllers
                 var imageEncoder = new ImageEncoder();
 
                 var secretImageData =
-                    imageEncoder.DecodeImage(modifiedImageData, this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight, 
-                        HeaderUtilities.IsEncrypted(modifiedImageData, this.ModifiedImage.PixelWidth));
+                    imageEncoder.DecodeImage(modifiedImageData, this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
 
                 this.SecretImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
 
-                using var writeStream = this.SecretImage.PixelBuffer.AsStream();
-                await writeStream.WriteAsync(secretImageData, 0, secretImageData.Length);
+                if (!HeaderUtilities.IsEncrypted(modifiedImageData, this.ModifiedImage.PixelWidth))
+                {
+                    using var writeStream = this.SecretImage.PixelBuffer.AsStream();
+                    await writeStream.WriteAsync(secretImageData, 0, secretImageData.Length);
+                    this.EncryptedSecretImage = null;
+                }
+                else
+                {
+                    this.EncryptedSecretImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
+                    using var encryptedWriteStream = this.EncryptedSecretImage.PixelBuffer.AsStream();
+                    await encryptedWriteStream.WriteAsync(secretImageData, 0, secretImageData.Length);
+                    using var writeStream = this.SecretImage.PixelBuffer.AsStream();
+                    await writeStream.WriteAsync(ImageUtilities.SwitchImageHalves(secretImageData), 0, secretImageData.Length);
+
+                }
+
+                
             } 
             else
             {
