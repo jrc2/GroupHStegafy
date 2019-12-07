@@ -128,7 +128,15 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public async Task EmbedSecretImage()
         {
-            var secretImageData = await this.getImageData(this.SecretImage);
+            byte[] secretImageData;
+            if (this.EncryptedSecretImage != null)
+            {
+                secretImageData = await this.getImageData(this.EncryptedSecretImage);
+            }
+            else
+            {
+                secretImageData = await this.getImageData(this.SecretImage);
+            }
             var originalImageData = await this.getImageData(this.OriginalImage);
 
             var imageEncoder = new ImageEncoder();
@@ -230,9 +238,9 @@ namespace GroupHStegafy.Controllers
                 return;
             }
 
-            var encryptedSecretImageData = ImageEncoder.SwapImageHalves(await this.getImageData(this.SecretImage));
+            var encryptedSecretImageData = ImageEncoder.EncryptImage(await this.getImageData(this.SecretImage), this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
 
-            this.EncryptedSecretImage = new WriteableBitmap(this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
+            this.EncryptedSecretImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
 
             using var writeStream = this.EncryptedSecretImage.PixelBuffer.AsStream();
             await writeStream.WriteAsync(encryptedSecretImageData, 0, encryptedSecretImageData.Length);
@@ -254,7 +262,7 @@ namespace GroupHStegafy.Controllers
             var imageToSave = this.OriginalImage == null 
                 ? this.SecretImage 
                 : saveEncrypted 
-                    ? this.EncryptedSecretImage 
+                    ? this.EncryptedSecretImage //TODO use EncryptedModifiedImage
                     : this.ModifiedImage;
 
             var stream = await saveFile.OpenAsync(FileAccessMode.ReadWrite);

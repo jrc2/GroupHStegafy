@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Windows.UI.Xaml.Media.Imaging;
 using GroupHStegafy.Utilities;
 
 namespace GroupHStegafy.Model
@@ -71,7 +72,7 @@ namespace GroupHStegafy.Model
             {
                 for (var x = 0; x < modifiedImageWidth; x++)
                 {
-                    if (isInsignificantBit(ImageUtilities.GetByteForColor(modifiedImageBytes, x, y, modifiedImageWidth, LeastSignificantPixelColor)))
+                    if (this.isInsignificantBit(ImageUtilities.GetByteForColor(modifiedImageBytes, x, y, modifiedImageWidth, LeastSignificantPixelColor)))
                     {
                         ImageUtilities.ChangePixelColor(secretImageBytes, x, y, modifiedImageWidth, Color.White);
                     }
@@ -89,14 +90,36 @@ namespace GroupHStegafy.Model
         /// <summary>
         ///     Swaps the top and bottom halves of image data.
         /// </summary>
-        public static byte[] SwapImageHalves(byte[] imageBytes)
+        public static byte[] EncryptImage(byte[] secretImageBytes, int originalImageWidth, int originalImageHeight, int secretImageWidth, int secretImageHeight)
         {
-            var firstHalf = imageBytes.Take(imageBytes.Length / 2);
-            var secondHalf = imageBytes.Skip(imageBytes.Length / 2) .Take(imageBytes.Length / 2);
-            var encryptedImageBytes = new List<byte>();
-            encryptedImageBytes.AddRange(secondHalf);
-            encryptedImageBytes.AddRange(firstHalf);
-            return encryptedImageBytes.ToArray();
+            var encryptedImageBytes = new byte[originalImageWidth * originalImageHeight * ImageUtilities.BytesPerPixel];
+
+            for (var y = 0; y < originalImageHeight; y++)
+            {
+                for (var x = 0; x < originalImageWidth; x++)
+                {
+                    ImageUtilities.ChangePixelColor(encryptedImageBytes, x, y, originalImageWidth, Color.White);
+                }
+            }
+
+            for (var y = 0; y < secretImageHeight; y++)
+            {
+                for (var x = 0; x < secretImageWidth; x++)
+                {
+                    if (!ImageUtilities.IsPixelWhite(secretImageBytes, x, y, secretImageWidth))
+                    {
+                        ImageUtilities.ChangePixelColor(encryptedImageBytes, x, y, originalImageWidth, Color.Black);
+                    }
+                }
+            }
+
+            var encryptedImageBytesList = new List<byte>();
+
+            var firstHalf = encryptedImageBytes.Take(encryptedImageBytes.Length / 2);
+            var secondHalf = encryptedImageBytes.Skip(encryptedImageBytes.Length / 2) .Take(encryptedImageBytes.Length / 2);
+            encryptedImageBytesList.AddRange(secondHalf);
+            encryptedImageBytesList.AddRange(firstHalf);
+            return encryptedImageBytesList.ToArray();
         }
 
         private bool isInsignificantBit(byte insignificantBit)
