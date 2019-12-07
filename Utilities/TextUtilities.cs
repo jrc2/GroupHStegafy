@@ -23,13 +23,18 @@ namespace GroupHStegafy.Utilities
 
         public static string EncryptText(string text, string expandedKey)
         {
+            if (expandedKey.Length != text.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(expandedKey), "expanded key must be the same length as text to encrypt");
+            }
+
             var encryptedText = "";
 
-            for (int i = 0; i < text.Length; i++)
+            for (var i = 0; i < text.Length; i++)
             {
                 var isLowercase = char.IsLower(text[i]);
-                var numericEquivalent = (text.ToUpper()[i] + expandedKey[i]) % 26;
-                var letterToAdd = (char) (numericEquivalent += 'A');
+                var numericEquivalent = (text.ToUpper()[i] + expandedKey.ToUpper()[i]) % 26;
+                var letterToAdd = (char) (numericEquivalent + 'A');
                 if (isLowercase)
                 {
                     encryptedText += char.ToLower(letterToAdd);
@@ -41,6 +46,33 @@ namespace GroupHStegafy.Utilities
             }
 
             return encryptedText;
+        }
+
+        public static string DecryptText(string encryptedText, string expandedKey)
+        {
+            if (expandedKey.Length != encryptedText.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(expandedKey), "expanded key must be the same length as text to encrypt");
+            }
+
+            var decryptedText = "";
+
+            for (var i = 0; i < encryptedText.Length; i++)
+            {
+                var isLowercase = char.IsLower(encryptedText[i]);
+                var numericEquivalent = (encryptedText.ToUpper()[i] - expandedKey.ToUpper()[i] + 26) % 26;
+                var letterToAdd = (char) (numericEquivalent + 'A');
+                if (isLowercase)
+                {
+                    decryptedText += char.ToLower(letterToAdd);
+                }
+                else
+                {
+                    decryptedText += letterToAdd;
+                }
+            }
+
+            return decryptedText;
         }
     }
 }
