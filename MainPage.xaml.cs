@@ -276,7 +276,7 @@ namespace GroupHStegafy
                 var saveFile = await selectSaveImageFile();
                 if (saveFile != null && this.encryptCheckbox.IsChecked.HasValue)
                 {
-                    await this.stegafyManager.SaveImage(saveFile, this.encryptCheckbox.IsChecked.Value);
+                    await this.stegafyManager.SaveImage(saveFile);
                 }
             }
             else

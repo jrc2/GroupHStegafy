@@ -99,12 +99,7 @@ namespace GroupHStegafy.Utilities
             var secondPixelBlueByte = ImageUtilities.GetByteForColor(imageData, 1, 0, width, PixelColor.Blue);
             secondPixelBlueByte |= 0xFE;
 
-            if (secondPixelBlueByte == 0xFF)
-            {
-                return MessageType.Text;
-            }
-
-            return MessageType.MonochromeBmp;
+            return secondPixelBlueByte == 0xFF ? MessageType.Text : MessageType.MonochromeBmp;
         }
 
         /// <summary>

@@ -224,9 +224,8 @@ namespace GroupHStegafy.Controllers
         /// Saves the image.
         /// </summary>
         /// <param name="saveFile">The save file.</param>
-        /// <param name="saveEncrypted">Save the modified Image as encrypted if true</param>
         /// <exception cref="ArgumentException">Invalid SaveFile.</exception>
-        public async Task SaveImage(StorageFile saveFile, bool saveEncrypted)
+        public async Task SaveImage(StorageFile saveFile)
         {
             if (saveFile == null)
             {
@@ -235,9 +234,7 @@ namespace GroupHStegafy.Controllers
 
             var imageToSave = this.OriginalImage == null 
                 ? this.SecretImage 
-                : saveEncrypted 
-                    ? this.ModifiedImage //TODO remove branches
-                    : this.ModifiedImage;
+                : this.ModifiedImage;
 
             var stream = await saveFile.OpenAsync(FileAccessMode.ReadWrite);
             var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
