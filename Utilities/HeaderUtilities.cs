@@ -54,8 +54,8 @@ namespace GroupHStegafy.Utilities
                 secondPixelBlueByte &= 0xfe;
             }
 
-            ImageUtilities.SetPixel(imageData, 1, 0, secondPixelRedByte, imageWidth);
-            ImageUtilities.SetPixel(imageData, 1, 0, secondPixelBlueByte, imageWidth);
+            ImageUtilities.SetPixel(imageData, 1, 0, secondPixelRedByte, imageWidth, PixelColor.Red);
+            ImageUtilities.SetPixel(imageData, 1, 0, secondPixelBlueByte, imageWidth, PixelColor.Blue);
 
             return imageData;
         }

@@ -86,11 +86,11 @@ namespace GroupHStegafy.Utilities
         /// <param name="y">The y.</param>
         /// <param name="newPixel">The new pixel.</param>
         /// <param name="width">The width.</param>
-        public static void SetPixel(byte[] imageData, int x, int y, byte newPixel, int width)
+        public static void SetPixel(byte[] imageData, int x, int y, byte newPixel, int width, PixelColor pixelColor)
         {
             // TODO check naming (is newPixel is not a pixel)
             var offset = CalculateByteOffset(x, y, width);
-            imageData[offset + PixelColorByteOffset(PixelColor.Blue)] = newPixel;
+            imageData[offset + PixelColorByteOffset(pixelColor)] = newPixel;
         }
 
         /// <summary>

@@ -135,7 +135,8 @@ namespace GroupHStegafy.Controllers
                 var imageEncoder = new ImageEncoder();
 
                 var secretImageData =
-                    imageEncoder.DecodeImage(modifiedImageData, this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
+                    imageEncoder.DecodeImage(modifiedImageData, this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight, 
+                        HeaderUtilities.IsEncrypted(modifiedImageData, this.ModifiedImage.PixelWidth));
 
                 this.SecretImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
 

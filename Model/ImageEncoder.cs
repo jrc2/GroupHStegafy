@@ -43,7 +43,7 @@ namespace GroupHStegafy.Model
                     {
                         originalLsb &= 0xfe;
                     }
-                    ImageUtilities.SetPixel(originalBytes, x, y, originalLsb, originalImageWidth);
+                    ImageUtilities.SetPixel(originalBytes, x, y, originalLsb, originalImageWidth, PixelColor.Blue);
                 }
             }
 
@@ -58,7 +58,7 @@ namespace GroupHStegafy.Model
         /// <param name="modifiedImageHeight">Height of the modified image.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">Invalid ModifiedImageBytes</exception>
-        public byte[] DecodeImage(byte[] modifiedImageBytes, int modifiedImageWidth, int modifiedImageHeight)
+        public byte[] DecodeImage(byte[] modifiedImageBytes, int modifiedImageWidth, int modifiedImageHeight, bool isEncrypted)
         {
             if (modifiedImageBytes.Length % ImageUtilities.BytesPerPixel != 0)
             {
@@ -83,7 +83,19 @@ namespace GroupHStegafy.Model
                 }
             }
 
-            return secretImageBytes;
+            if (!isEncrypted)
+            {
+                return secretImageBytes;
+            }
+
+            var encryptedSecretImageBytes = new List<byte>();
+
+            var firstHalf = secretImageBytes.Take(secretImageBytes.Length / 2);
+            var secondHalf = secretImageBytes.Skip(secretImageBytes.Length / 2).Take(secretImageBytes.Length / 2);
+            encryptedSecretImageBytes.AddRange(secondHalf);
+            encryptedSecretImageBytes.AddRange(firstHalf);
+            return encryptedSecretImageBytes.ToArray();
+
         }
 
         /// <summary>
