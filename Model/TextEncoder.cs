@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using GroupHStegafy.Utilities;
 
 namespace GroupHStegafy.Model
@@ -33,7 +34,39 @@ namespace GroupHStegafy.Model
         /// <returns></returns>
         public byte[] EncodeMessage(byte[] originalImageBytes, string message)
         {
-            throw new ArgumentException("Not Implemented");
+            message += "#.-.-.-#";
+            var stringDataBytes = Encoding.UTF8.GetBytes(message);
+            var stringDataBits = new Queue<bool>();
+            foreach (var stringByte in stringDataBytes)
+            {
+                foreach (var bit in convertByteToBoolArray(stringByte))
+                {
+                    stringDataBits.Enqueue(bit);
+                }
+            }
+
+            for (var i = 8; i < originalImageBytes.Length; i += ImageUtilities.BytesPerPixel)
+            {
+                for (var j = 2; j >= 0; j--)
+                {
+                    for (var k = 8 - this.bitsPerColorChannel; k < 8; k++)
+                    {
+                        if (stringDataBits.Count != 0)
+                        {
+                            var newByteBits = this.convertByteToBoolArray(originalImageBytes[i + j]);
+                            newByteBits[k] = stringDataBits.Dequeue();
+                            originalImageBytes[i + j] = this.convertBoolArrayToByte(newByteBits);
+                        }
+                        else
+                        {
+                            return originalImageBytes;
+                        }
+                    }
+                }
+            }
+
+            throw new ArgumentException("Not enough image data in original image.");
+
         }
 
         /// <summary>
@@ -50,7 +83,7 @@ namespace GroupHStegafy.Model
             var bitCount = 0;
             for (var i = 8; i < modifiedImageBytes.Length; i+=ImageUtilities.BytesPerPixel)
             {
-                for (int j = 2; j >= 0; j--)
+                for (var j = 2; j >= 0; j--)
                 {
                     foreach (var bit in this.getInsignificantBits(modifiedImageBytes[i + j]))
                     {
@@ -71,14 +104,14 @@ namespace GroupHStegafy.Model
                 }
             }
 
-            return "Secret Message could not be read.";
+            throw new ArgumentException("Secret Message could not be read.");
         }
 
         private List<bool> getInsignificantBits(byte aByte)
         {
             var insignificantBits = new List<bool>();
             var byteBits = this.convertByteToBoolArray(aByte);
-            for (var i = 7; i > 7 - this.bitsPerColorChannel; i--)
+            for (var i = 8 - this.bitsPerColorChannel; i < 8; i++)
             {
                 insignificantBits.Add(byteBits[i]);
             }
