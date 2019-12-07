@@ -1,5 +1,11 @@
 ﻿using System;
 using System.Drawing;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.UI.Xaml.Media.Imaging;
 using GroupHStegafy.Model;
 
 namespace GroupHStegafy.Utilities
@@ -45,6 +51,19 @@ namespace GroupHStegafy.Utilities
         {
             var offset = CalculateByteOffset(x, y, width);
             return imageData[offset + PixelColorByteOffset(pixelColor)];
+        }
+
+        public static byte[] GetPixelBytes(byte[] imageData, int x, int y, int width)
+        {
+            var pixelData = new byte[4];
+
+            var offset = CalculateByteOffset(x, y, width);
+            pixelData[0] = imageData[offset];
+            pixelData[1] = imageData[offset + 1];
+            pixelData[2] = imageData[offset + 2];
+            pixelData[3] = imageData[offset + 3];
+
+            return pixelData;
         }
 
         /// <summary>
@@ -128,6 +147,75 @@ namespace GroupHStegafy.Utilities
                 PixelColor.Red => 2,
                 _ => throw new ArgumentOutOfRangeException(nameof(color), color, "Invalid Color.")
             };
+        }
+
+        /// <summary>
+        ///     Reads the image.
+        /// </summary>
+        /// <param name="sourceImageFile">The source image file.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">Invalid File.</exception>
+        public static async Task<WriteableBitmap> ReadImage(StorageFile sourceImageFile)
+        {
+            if (!sourceImageFile.IsAvailable)
+            {
+                throw new ArgumentException("Invalid File.");
+            }
+
+            var copyBitmapImage = await MakeACopyOfTheFileToWorkOn(sourceImageFile);
+
+            using var fileStream = await sourceImageFile.OpenAsync(FileAccessMode.Read);
+
+            var decoder = await BitmapDecoder.CreateAsync(fileStream);
+            var transform = new BitmapTransform
+            {
+                ScaledWidth = Convert.ToUInt32(copyBitmapImage.PixelWidth),
+                ScaledHeight = Convert.ToUInt32(copyBitmapImage.PixelHeight)
+            };
+
+            var image = new WriteableBitmap((int)decoder.PixelWidth, (int)decoder.PixelHeight);
+
+            var pixelData = await decoder.GetPixelDataAsync(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Straight,
+                transform,
+                ExifOrientationMode.IgnoreExifOrientation,
+                ColorManagementMode.DoNotColorManage
+            );
+
+            var sourcePixels = pixelData.DetachPixelData();
+
+            using var writeStream = image.PixelBuffer.AsStream();
+            await writeStream.WriteAsync(sourcePixels, 0, sourcePixels.Length);
+
+            return image;
+        }
+
+        /// <summary>
+        ///     Makes a copy of the file to work on.
+        /// </summary>
+        /// <param name="imageFile">The image file.</param>
+        /// <returns></returns>
+        public static async Task<BitmapImage> MakeACopyOfTheFileToWorkOn(StorageFile imageFile)
+        {
+            IRandomAccessStream inputStream = await imageFile.OpenReadAsync();
+            var newImage = new BitmapImage();
+            newImage.SetSource(inputStream);
+            return newImage;
+        }
+
+        /// <summary>
+        ///     Gets the image data.
+        /// </summary>
+        /// <param name="bitmap">The bitmap.</param>
+        /// <returns></returns>
+        public static async Task<byte[]> GetImageData(WriteableBitmap bitmap)
+        {
+            using var stream = bitmap.PixelBuffer.AsStream();
+            var imageData = new byte[(uint)stream.Length];
+            await stream.ReadAsync(imageData, 0, imageData.Length);
+
+            return imageData;
         }
     }
 }

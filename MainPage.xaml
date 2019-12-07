@@ -29,6 +29,6 @@
         <TextBlock HorizontalAlignment="Left" Margin="329,408,0,0" Text="Original Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="744,410,0,0" Text="Secret" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="1104,414,0,0" Text="Modified Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <CheckBox x:Name="encryptCheckbox" Content="Encrypt" Margin="20,405,0,0" VerticalAlignment="Top" IsEnabled="False" Checked="EncryptCheckbox_OnChecked" Unchecked="EncryptCheckbox_OnUnchecked"/>
+        <CheckBox x:Name="encryptCheckbox" Content="Encrypt" Margin="20,405,0,0" VerticalAlignment="Top" IsEnabled="False" Checked="encryptCheckbox_OnChecked" Unchecked="encryptCheckbox_OnUnchecked"/>
     </Grid>
 </Page>

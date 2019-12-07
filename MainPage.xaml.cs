@@ -129,7 +129,7 @@ namespace GroupHStegafy
                 return;
             }
 
-            if (HeaderUtilities.IsImageFile(sourceSecretFile))
+            if (await HeaderUtilities.IsImageFile(sourceSecretFile))
             {
                 await this.embedSecretImage(sourceSecretFile);
                 if (this.stegafyManager.ModifiedImage == null)
@@ -320,7 +320,7 @@ namespace GroupHStegafy
             this.errorTextBlock.Text = "";
         }
 
-        private async void EncryptCheckbox_OnChecked(object sender, RoutedEventArgs e)
+        private async void encryptCheckbox_OnChecked(object sender, RoutedEventArgs e)
         {
             await this.stegafyManager.EncryptSecretImage();
             await this.stegafyManager.EmbedSecretImage();
@@ -329,6 +329,7 @@ namespace GroupHStegafy
 
         private async void EncryptCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
         {
+            await this.stegafyManager.EncryptSecretImage();
             this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
             await this.stegafyManager.EmbedSecretImage();
         }
