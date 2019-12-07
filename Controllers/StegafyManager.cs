@@ -232,29 +232,29 @@ namespace GroupHStegafy.Controllers
         /// <summary>
         ///     Encrypts the secret message.
         /// </summary>
-        public void EncryptSecretMessage()
+        public void EncryptSecretMessage(string cipher, string message)
         {
-            if (this.SecretMessage == null)
+            if (string.IsNullOrWhiteSpace(this.SecretMessage) || string.IsNullOrWhiteSpace(message))
             {
                 return;
             }
 
-            //TODO Call encryptMessage in TextEncoder
-            this.SecretMessage = "Encrypted Secret Message.";
+            //TODO is passing in message ideal?
+            this.SecretMessage = TextEncoder.EncryptMessage(cipher, message);
         }
 
         /// <summary>
         ///     Decrypts the secret message.
         /// </summary>
-        public void DecryptSecretMessage()
+        public void DecryptSecretMessage(string key)
         {
             if (this.SecretMessage == null)
             {
                 return;
             }
 
-            //TODO Call decryptMessage in TextEncoder
-            this.SecretMessage = "Decrypted Secret Message.";
+            //TODO make sure this works
+            this.SecretMessage = TextEncoder.DecryptMessage(key, this.SecretMessage);
         }
 
         /// <summary>

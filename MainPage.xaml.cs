@@ -363,8 +363,7 @@ namespace GroupHStegafy
             }
             else
             {
-                this.stegafyManager.EncryptSecretMessage();
-                //TODO Call this.stegafyManager.EmbedSecretMessage(true);
+                this.stegafyManager.EncryptSecretMessage(this.cipherWordTextBox.Text, this.unencryptedSecretMessageTextBlock.Text);
                 this.encryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
                 this.encryptedSecretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
             }

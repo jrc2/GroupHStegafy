@@ -154,5 +154,21 @@ namespace GroupHStegafy.Model
 
             return result;
         }
+
+        public static string EncryptMessage(string key, string message)
+        {
+            var expandedKey = TextUtilities.ExpandKey(message.Length, key);
+            var encryptedMessage = TextUtilities.EncryptText(message, expandedKey);
+
+            return encryptedMessage;
+        }
+
+        public static string DecryptMessage(string key, string encryptedMessage)
+        {
+            var expandedKey = TextUtilities.ExpandKey(encryptedMessage.Length, key);
+            var decryptedMessage = TextUtilities.DecryptText(encryptedMessage, expandedKey);
+
+            return decryptedMessage;
+        }
     }
 }
