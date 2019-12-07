@@ -5,7 +5,7 @@
 
     <Application.Resources>
         <ResourceDictionary>
-            <x:Double x:Key="AppHeight">450</x:Double>
+            <x:Double x:Key="AppHeight">1350</x:Double>
             <x:Double x:Key="AppWidth">1350</x:Double>
         </ResourceDictionary>
     </Application.Resources>

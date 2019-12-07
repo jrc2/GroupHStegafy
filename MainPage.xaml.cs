@@ -61,7 +61,7 @@ namespace GroupHStegafy
             }
 
             this.openSecretFileButton.IsEnabled = true;
-            this.secretMessageTextBlock.Visibility = Visibility.Visible;
+            this.unencryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
             this.bitsPerColorChannelTextBox.IsEnabled = true;
             this.embedSecretMessageButton.IsEnabled = true;
             this.openModifiedImageButton.IsEnabled = false;
@@ -99,9 +99,9 @@ namespace GroupHStegafy
                     return;
                 }
 
-                this.secretMessageTextBlock.Visibility = Visibility.Collapsed;
-                this.secretImageDisplay.Visibility = Visibility.Visible;
-                this.secretImageDisplay.Source = this.stegafyManager.SecretImage;
+                this.unencryptedSecretMessageTextBlock.Visibility = Visibility.Collapsed;
+                this.unencryptedSecretImageDisplay.Visibility = Visibility.Visible;
+                this.unencryptedSecretImageDisplay.Source = this.stegafyManager.SecretImage;
             }
             else
             {
@@ -111,9 +111,9 @@ namespace GroupHStegafy
                     return;
                 }
 
-                this.secretMessageTextBlock.Visibility = Visibility.Visible;
-                this.secretMessageTextBlock.IsReadOnly = true;
-                this.secretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
+                this.unencryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
+                this.unencryptedSecretMessageTextBlock.IsReadOnly = true;
+                this.unencryptedSecretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
             }
 
             this.openOriginalImageButton.IsEnabled = false;
@@ -141,8 +141,8 @@ namespace GroupHStegafy
                 {
                     return;
                 }
-                this.secretImageDisplay.Visibility = Visibility.Visible;
-                this.secretImageDisplay.Source = this.stegafyManager.SecretImage;
+                this.unencryptedSecretImageDisplay.Visibility = Visibility.Visible;
+                this.unencryptedSecretImageDisplay.Source = this.stegafyManager.SecretImage;
                 this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
                 this.embedSecretMessageButton.IsEnabled = false;
             }
@@ -153,8 +153,8 @@ namespace GroupHStegafy
                 {
                     return;
                 }
-                this.secretMessageTextBlock.Visibility = Visibility.Visible;
-                this.secretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
+                this.unencryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
+                this.unencryptedSecretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
                 this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
             }
 
@@ -164,7 +164,7 @@ namespace GroupHStegafy
 
         private async void embedSecretMessageButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.secretMessageTextBlock.Text.Equals(""))
+            if (this.unencryptedSecretMessageTextBlock.Text.Equals(""))
             {
                 return;
             }
@@ -332,13 +332,14 @@ namespace GroupHStegafy
         {
             await this.stegafyManager.EncryptSecretImage();
             await this.stegafyManager.EmbedSecretImage(true);
-            this.modifiedImageDisplay.Source = this.stegafyManager.EncryptedSecretImage;
+            this.encryptedSecretImageDisplay.Visibility = Visibility.Visible;
+            this.encryptedSecretImageDisplay.Source = this.stegafyManager.EncryptedSecretImage;
         }
 
         private async void encryptCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
         {
             await this.stegafyManager.EncryptSecretImage();
-            this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
+            this.encryptedSecretImageDisplay.Visibility = Visibility.Collapsed;
         }
 
         private async void reloadButton_Click(object sender, RoutedEventArgs e)

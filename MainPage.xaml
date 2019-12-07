@@ -5,19 +5,22 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Height="{StaticResource AppHeight}"
-    Width="{StaticResource AppWidth}"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Height="700"
+    Width="800"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" d:DesignHeight="700" d:DesignWidth="800">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Height="{StaticResource AppHeight}" Width="{StaticResource AppWidth}">
-        <Border BorderBrush="{ThemeResource ApplicationForegroundThemeBrush}" BorderThickness="3" HorizontalAlignment="Left" Height="355" VerticalAlignment="Top" Width="355" Canvas.ZIndex="1" Margin="197,46,0,0">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Height="700" Width="800" Margin="0,0,0,0">
+        <Border BorderBrush="{ThemeResource ApplicationForegroundThemeBrush}" BorderThickness="3" HorizontalAlignment="Left" Height="250" VerticalAlignment="Top" Width="250" Canvas.ZIndex="1" Margin="197,46,0,0">
             <Image x:Name="originalImageDisplay"/>
         </Border>
-        <Border BorderBrush="{ThemeResource ApplicationForegroundThemeBrush}" BorderThickness="3" HorizontalAlignment="Left" Height="355" VerticalAlignment="Top" Width="355" Canvas.ZIndex="1" Margin="586,46,0,0">
-            <Image x:Name="secretImageDisplay" Visibility="Collapsed"/>
+        <Border BorderBrush="{ThemeResource ApplicationForegroundThemeBrush}" BorderThickness="3" HorizontalAlignment="Left" Height="250" VerticalAlignment="Top" Width="250" Canvas.ZIndex="1" Margin="197,371,0,0">
+            <Image x:Name="unencryptedSecretImageDisplay" Visibility="Collapsed"/>
         </Border>
-        <TextBox x:Name="secretMessageTextBlock"  HorizontalAlignment="Left" Margin="586,46,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="355" Height="355" Visibility="Collapsed"/>
-        <Border BorderBrush="{ThemeResource ApplicationForegroundThemeBrush}" BorderThickness="3" HorizontalAlignment="Left" Height="355" VerticalAlignment="Center" Width="355" Canvas.ZIndex="1" Margin="972,0,0,0">
+        <Border BorderBrush="{ThemeResource ApplicationForegroundThemeBrush}" BorderThickness="3" HorizontalAlignment="Left" Height="250" VerticalAlignment="Top" Width="250" Canvas.ZIndex="1" Margin="495,371,0,0">
+            <Image x:Name="encryptedSecretImageDisplay" Visibility="Collapsed"/>
+        </Border>
+        <TextBox x:Name="unencryptedSecretMessageTextBlock"  HorizontalAlignment="Left" Margin="197,371,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="250" Height="250" Visibility="Collapsed"/>
+        <Border BorderBrush="{ThemeResource ApplicationForegroundThemeBrush}" BorderThickness="3" HorizontalAlignment="Left" Height="250" VerticalAlignment="Top" Width="250" Canvas.ZIndex="1" Margin="495,47,0,0">
             <Image x:Name="modifiedImageDisplay"/>
         </Border>
         <Button x:Name="openOriginalImageButton" Content="Open Original Image" Margin="19,48,0,0" VerticalAlignment="Top" Click="openOriginalImageButton_Click" RenderTransformOrigin="0.137,-1.236"/>
@@ -26,12 +29,13 @@
         <Button x:Name="openModifiedImageButton" Content="Open Modified Image" Margin="20,244,0,0" VerticalAlignment="Top" Click="openModifiedImageButton_Click" RenderTransformOrigin="0.137,-1.236"/>
         <Button x:Name="saveButton" Content="Save" Margin="19,371,0,0" VerticalAlignment="Top" Click="saveButton_Click" IsEnabled="False"/>
         <TextBlock x:Name="errorTextBlock" HorizontalAlignment="Left" Margin="197,10,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="564" FontWeight="Bold" Foreground="Red"/>
-        <TextBlock HorizontalAlignment="Left" Margin="329,408,0,0" Text="Original Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="744,410,0,0" Text="Secret" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1104,414,0,0" Text="Modified Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="277,302,0,0" Text="Original Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="262,627,0,0" Text="Unencrypted Secret" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="572,306,0,0" Text="Modified Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <CheckBox x:Name="encryptCheckbox" Content="Encrypt" Margin="20,405,0,0" VerticalAlignment="Top" IsEnabled="False" Checked="encryptCheckbox_OnChecked" Unchecked="encryptCheckbox_OnUnchecked"/>
         <TextBox x:Name="bitsPerColorChannelTextBox" HorizontalAlignment="Left" Margin="64,193,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="77" IsEnabled="False"/>
         <TextBlock HorizontalAlignment="Left" Margin="22,201,0,0" Text="BPCC:" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <Button x:Name="reloadButton" Content="Reload" Margin="106,371,0,0" VerticalAlignment="Top" Click="reloadButton_Click"/>
+        <TextBlock HorizontalAlignment="Left" Margin="568,631,0,0" Text="Encrypted Secret" TextWrapping="Wrap" VerticalAlignment="Top"/>
     </Grid>
 </Page>
