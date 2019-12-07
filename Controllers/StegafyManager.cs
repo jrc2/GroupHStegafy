@@ -95,13 +95,13 @@ namespace GroupHStegafy.Controllers
             byte[] secretImageData;
             if (this.EncryptedSecretImage != null)
             {
-                secretImageData = await this.getImageData(this.EncryptedSecretImage);
+                secretImageData = await ImageUtilities.GetImageData(this.EncryptedSecretImage);
             }
             else
             {
-                secretImageData = await this.getImageData(this.SecretImage);
+                secretImageData = await ImageUtilities.GetImageData(this.SecretImage);
             }
-            var originalImageData = await this.getImageData(this.OriginalImage);
+            var originalImageData = await ImageUtilities.GetImageData(this.OriginalImage);
 
             var imageEncoder = new ImageEncoder();
 
@@ -202,7 +202,7 @@ namespace GroupHStegafy.Controllers
                 return;
             }
 
-            var encryptedSecretImageData = ImageEncoder.EncryptImage(await this.getImageData(this.SecretImage), this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
+            var encryptedSecretImageData = ImageEncoder.EncryptImage(await ImageUtilities.GetImageData(this.SecretImage), this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
 
             this.EncryptedSecretImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
 

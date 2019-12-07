@@ -327,7 +327,7 @@ namespace GroupHStegafy
             this.modifiedImageDisplay.Source = this.stegafyManager.EncryptedSecretImage;
         }
 
-        private async void EncryptCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
+        private async void encryptCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
         {
             await this.stegafyManager.EncryptSecretImage();
             this.modifiedImageDisplay.Source = this.stegafyManager.ModifiedImage;
