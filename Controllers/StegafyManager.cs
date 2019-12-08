@@ -246,7 +246,7 @@ namespace GroupHStegafy.Controllers
         /// <summary>
         ///     Decrypts the secret message.
         /// </summary>
-        public void DecryptSecretMessage(string key)
+        public void DecryptSecretMessage()
         {
             if (this.SecretMessage == null)
             {
@@ -254,7 +254,7 @@ namespace GroupHStegafy.Controllers
             }
 
             //TODO make sure this works
-            this.SecretMessage = TextEncoder.DecryptMessage(key, this.SecretMessage);
+            this.SecretMessage = TextEncoder.DecryptMessage(this.SecretMessage);
         }
 
         /// <summary>
