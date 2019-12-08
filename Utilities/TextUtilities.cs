@@ -4,8 +4,20 @@ namespace GroupHStegafy.Utilities
 {
     public static class TextUtilities
     {
+        /// <summary>
+        /// Expands the key.
+        /// </summary>
+        /// <param name="length">The length.</param>
+        /// <param name="key">The key.</param>
+        /// <returns>the expanded key</returns>
+        /// <exception cref="ArgumentException">No key provided</exception>
         public static string ExpandKey(int length, string key)
         {
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentException("No key provided");
+            }
+
             var expandedKey = "";
 
             for (int strPosition = 0, keyPosition = 0; strPosition < length; strPosition++, keyPosition++)
@@ -21,8 +33,29 @@ namespace GroupHStegafy.Utilities
             return expandedKey;
         }
 
+        /// <summary>
+        /// Encrypts the text.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="key">The key.</param>
+        /// <returns>encrypted text</returns>
+        /// <exception cref="ArgumentException">
+        /// No key provided
+        /// or
+        /// no text provided
+        /// </exception>
         public static string EncryptText(string text, string key)
         {
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentException("No key provided");
+            }
+
+            if (string.IsNullOrEmpty(text))
+            {
+                throw new ArgumentException("no text provided");
+            }
+
             var expandedKey = ExpandKey(text.Length, key);
 
             var encryptedText = key + "#KEY#";
@@ -45,6 +78,11 @@ namespace GroupHStegafy.Utilities
             return encryptedText;
         }
 
+        /// <summary>
+        /// Decrypts the text.
+        /// </summary>
+        /// <param name="encryptedTextWithKey">The encrypted text with key.</param>
+        /// <returns>decrypted text</returns>
         public static string DecryptText(string encryptedTextWithKey)
         {
             var decryptedText = "";
@@ -72,11 +110,15 @@ namespace GroupHStegafy.Utilities
             return decryptedText;
         }
 
+        /// <summary>
+        /// Gets the key.
+        /// </summary>
+        /// <param name="encryptedTextWithKey">The encrypted text with key.</param>
+        /// <returns>the key</returns>
         public static string GetKey(string encryptedTextWithKey)
         {
             string[] separator = { "#", "KEY", "#" };
             var stringList = encryptedTextWithKey.Split(separator, 2, StringSplitOptions.None);
-            var encryptedText = stringList[1];
             return stringList[0];
         }
     }

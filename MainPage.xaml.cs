@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
@@ -8,6 +9,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using GroupHStegafy.Controllers;
 using GroupHStegafy.Utilities;
 
@@ -154,7 +156,8 @@ namespace GroupHStegafy
                 return;
             }
 
-            this.stegafyManager.SecretMessage = this.unencryptedSecretMessageTextBlock.Text;
+            var stripNonAlpha = new Regex("[^a-zA-Z]");
+            this.stegafyManager.SecretMessage = stripNonAlpha.Replace(this.unencryptedSecretMessageTextBlock.Text, "");
 
             try
             {
@@ -208,7 +211,6 @@ namespace GroupHStegafy
 
             if (await this.stegafyManager.IsModifiedImageSecretEncrypted())
             {
-                Debug.WriteLine("asdfasdf");
                 await this.stegafyManager.ExtractSecretMessage();
                 this.encryptedSecretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
                 this.encryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
@@ -217,6 +219,9 @@ namespace GroupHStegafy
                 this.unencryptedSecretMessageTextBlock.Text = this.stegafyManager.SecretMessage;
                 this.unencryptedSecretMessageTextBlock.Visibility = Visibility.Visible;
                 this.unencryptedSecretMessageTextBlock.IsReadOnly = true;
+                this.cipherWordTextBox.Visibility = Visibility.Visible;
+                this.cipherWordTextBox.IsReadOnly = true;
+                this.cipherWordTextBox.Text = TextUtilities.GetKey(this.stegafyManager.SecretMessage);
             }
             else
             {
