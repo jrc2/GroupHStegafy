@@ -14,6 +14,8 @@ namespace GroupHStegafy.Controllers
     /// </summary>
     public class StegafyManager
     {
+        #region Data members
+
         /// <summary>
         ///     The original Image before it is modified.
         /// </summary>
@@ -39,8 +41,12 @@ namespace GroupHStegafy.Controllers
         /// </summary>
         public string SecretMessage;
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
-        ///     Initializes a new instance of the <see cref="StegafyManager"/> class.
+        ///     Initializes a new instance of the <see cref="StegafyManager" /> class.
         /// </summary>
         public StegafyManager()
         {
@@ -50,6 +56,10 @@ namespace GroupHStegafy.Controllers
             this.EncryptedSecretImage = null;
             this.SecretMessage = null;
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         ///     Reads the original image.
@@ -129,13 +139,15 @@ namespace GroupHStegafy.Controllers
         {
             var modifiedImageData = await ImageUtilities.GetImageData(this.ModifiedImage);
 
-            if (HeaderUtilities.IsMessageEmbedded(modifiedImageData, this.ModifiedImage.PixelWidth) 
-                && HeaderUtilities.GetMessageType(modifiedImageData, this.ModifiedImage.PixelWidth) == MessageType.MonochromeBmp)
+            if (HeaderUtilities.IsMessageEmbedded(modifiedImageData, this.ModifiedImage.PixelWidth)
+                && HeaderUtilities.GetMessageType(modifiedImageData, this.ModifiedImage.PixelWidth) ==
+                MessageType.MonochromeBmp)
             {
                 var imageEncoder = new ImageEncoder();
 
                 var secretImageData =
-                    imageEncoder.DecodeImage(modifiedImageData, this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
+                    imageEncoder.DecodeImage(modifiedImageData, this.ModifiedImage.PixelWidth,
+                        this.ModifiedImage.PixelHeight);
 
                 this.SecretImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
 
@@ -147,16 +159,15 @@ namespace GroupHStegafy.Controllers
                 }
                 else
                 {
-                    this.EncryptedSecretImage = new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
+                    this.EncryptedSecretImage =
+                        new WriteableBitmap(this.ModifiedImage.PixelWidth, this.ModifiedImage.PixelHeight);
                     using var encryptedWriteStream = this.EncryptedSecretImage.PixelBuffer.AsStream();
                     await encryptedWriteStream.WriteAsync(secretImageData, 0, secretImageData.Length);
                     using var writeStream = this.SecretImage.PixelBuffer.AsStream();
-                    await writeStream.WriteAsync(ImageUtilities.SwitchImageHalves(secretImageData), 0, secretImageData.Length);
-
+                    await writeStream.WriteAsync(ImageUtilities.SwitchImageHalves(secretImageData), 0,
+                        secretImageData.Length);
                 }
-
-                
-            } 
+            }
             else
             {
                 throw new ArgumentException("Modified Image doesn't contain Secret Image");
@@ -174,7 +185,8 @@ namespace GroupHStegafy.Controllers
 
             var modifiedImageData = textEncoder.EncodeMessage(originalImageData, this.SecretMessage);
 
-            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, encrypt, bitsPerColorChannel,
+            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, encrypt,
+                bitsPerColorChannel,
                 MessageType.Text);
 
             this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
@@ -192,7 +204,9 @@ namespace GroupHStegafy.Controllers
             if (HeaderUtilities.IsMessageEmbedded(modifiedImageData, this.ModifiedImage.PixelWidth)
                 && HeaderUtilities.GetMessageType(modifiedImageData, this.ModifiedImage.PixelWidth) == MessageType.Text)
             {
-                var textEncoder = new TextEncoder(HeaderUtilities.GetBitsPerColorChannel(modifiedImageData, this.ModifiedImage.PixelWidth));
+                var textEncoder =
+                    new TextEncoder(
+                        HeaderUtilities.GetBitsPerColorChannel(modifiedImageData, this.ModifiedImage.PixelWidth));
 
                 this.SecretMessage = textEncoder.DecodeMessage(modifiedImageData);
             }
@@ -208,7 +222,8 @@ namespace GroupHStegafy.Controllers
         /// <returns></returns>
         public async Task<MessageType> GetSecretType()
         {
-            return HeaderUtilities.GetMessageType(await ImageUtilities.GetImageData(this.ModifiedImage), this.ModifiedImage.PixelWidth);
+            return HeaderUtilities.GetMessageType(await ImageUtilities.GetImageData(this.ModifiedImage),
+                this.ModifiedImage.PixelWidth);
         }
 
         /// <summary>
@@ -221,9 +236,12 @@ namespace GroupHStegafy.Controllers
                 return;
             }
 
-            var encryptedSecretImageData = ImageEncoder.EncryptImage(await ImageUtilities.GetImageData(this.SecretImage), this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
+            var encryptedSecretImageData = ImageEncoder.EncryptImage(
+                await ImageUtilities.GetImageData(this.SecretImage), this.OriginalImage.PixelWidth,
+                this.OriginalImage.PixelHeight, this.SecretImage.PixelWidth, this.SecretImage.PixelHeight);
 
-            this.EncryptedSecretImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
+            this.EncryptedSecretImage =
+                new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
 
             using var writeStream = this.EncryptedSecretImage.PixelBuffer.AsStream();
             await writeStream.WriteAsync(encryptedSecretImageData, 0, encryptedSecretImageData.Length);
@@ -261,11 +279,12 @@ namespace GroupHStegafy.Controllers
         /// <returns>True if the modified image is encrypted</returns>
         public async Task<bool> IsModifiedImageSecretEncrypted()
         {
-            return HeaderUtilities.IsEncrypted(await ImageUtilities.GetImageData(this.ModifiedImage), this.ModifiedImage.PixelWidth);
+            return HeaderUtilities.IsEncrypted(await ImageUtilities.GetImageData(this.ModifiedImage),
+                this.ModifiedImage.PixelWidth);
         }
 
         /// <summary>
-        /// Saves the image.
+        ///     Saves the image.
         /// </summary>
         /// <param name="saveFile">The save file.</param>
         /// <exception cref="ArgumentException">Invalid SaveFile.</exception>
@@ -276,8 +295,8 @@ namespace GroupHStegafy.Controllers
                 throw new ArgumentException("Invalid Save File.");
             }
 
-            var imageToSave = this.OriginalImage == null 
-                ? this.SecretImage 
+            var imageToSave = this.OriginalImage == null
+                ? this.SecretImage
                 : this.ModifiedImage;
 
             var stream = await saveFile.OpenAsync(FileAccessMode.ReadWrite);
@@ -289,7 +308,7 @@ namespace GroupHStegafy.Controllers
 
             encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore,
                 (uint) imageToSave.PixelWidth,
-                (uint)imageToSave.PixelHeight, imageToSave.PixelHeight, imageToSave.PixelWidth, pixels);
+                (uint) imageToSave.PixelHeight, imageToSave.PixelHeight, imageToSave.PixelWidth, pixels);
             await encoder.FlushAsync();
 
             stream.Dispose();
@@ -299,7 +318,7 @@ namespace GroupHStegafy.Controllers
         ///     Determines if the file to save is a text file.
         /// </summary>
         /// <returns>
-        ///   <c>true</c> if [is save file text]; otherwise, <c>false</c>.
+        ///     <c>true</c> if [is save file text]; otherwise, <c>false</c>.
         /// </returns>
         public bool IsSaveFileText()
         {
@@ -315,5 +334,6 @@ namespace GroupHStegafy.Controllers
             await FileIO.WriteTextAsync(saveFile, this.SecretMessage);
         }
 
+        #endregion
     }
 }

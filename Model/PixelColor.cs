@@ -9,10 +9,12 @@
         ///     Red color value of a Pixel.
         /// </summary>
         Red,
+
         /// <summary>
         ///     Blue color value of a Pixel.
         /// </summary>
         Blue,
+
         /// <summary>
         ///     Green color value of a Pixel.
         /// </summary>

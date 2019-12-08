@@ -1,18 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using GroupHStegafy.Utilities;
 
 namespace GroupHStegafy.Model
 {
     /// <summary>
-    ///     Provides Basic Utility for modifying an image for Steganography. 
+    ///     Provides Basic Utility for modifying an image for Steganography.
     /// </summary>
     public class ImageEncoder
     {
+        #region Data members
+
         private const PixelColor LeastSignificantPixelColor = PixelColor.Blue;
         private const int LeastSignificantBit = 7;
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         ///     Returns a byte array of image data the is the modified image data.
@@ -23,7 +27,8 @@ namespace GroupHStegafy.Model
         /// <param name="secretImageWidth">Width of the secret image.</param>
         /// <param name="secretImageHeight">Height of the secret image.</param>
         /// <returns></returns>
-        public byte[] EncodeImage(byte[] originalBytes, int originalImageWidth, byte[] secretImageBytes, int secretImageWidth, int secretImageHeight)
+        public byte[] EncodeImage(byte[] originalBytes, int originalImageWidth, byte[] secretImageBytes,
+            int secretImageWidth, int secretImageHeight)
         {
             if (originalBytes.Length < secretImageBytes.Length || originalImageWidth < secretImageWidth)
             {
@@ -34,7 +39,8 @@ namespace GroupHStegafy.Model
             {
                 for (var x = 0; x < secretImageWidth; x++)
                 {
-                    var originalLsb = ImageUtilities.GetByteForColor(originalBytes, x, y, originalImageWidth, LeastSignificantPixelColor);
+                    var originalLsb = ImageUtilities.GetByteForColor(originalBytes, x, y, originalImageWidth,
+                        LeastSignificantPixelColor);
                     if (ImageUtilities.IsPixelWhite(secretImageBytes, x, y, secretImageWidth))
                     {
                         originalLsb |= 1;
@@ -43,6 +49,7 @@ namespace GroupHStegafy.Model
                     {
                         originalLsb &= 0xfe;
                     }
+
                     ImageUtilities.SetPixel(originalBytes, x, y, originalLsb, originalImageWidth, PixelColor.Blue);
                 }
             }
@@ -71,7 +78,8 @@ namespace GroupHStegafy.Model
             {
                 for (var x = 0; x < modifiedImageWidth; x++)
                 {
-                    if (this.isInsignificantBit(ImageUtilities.GetByteForColor(modifiedImageBytes, x, y, modifiedImageWidth, LeastSignificantPixelColor)))
+                    if (this.isInsignificantBit(ImageUtilities.GetByteForColor(modifiedImageBytes, x, y,
+                        modifiedImageWidth, LeastSignificantPixelColor)))
                     {
                         ImageUtilities.ChangePixelColor(secretImageBytes, x, y, modifiedImageWidth, Color.White);
                     }
@@ -79,17 +87,17 @@ namespace GroupHStegafy.Model
                     {
                         ImageUtilities.ChangePixelColor(secretImageBytes, x, y, modifiedImageWidth, Color.Black);
                     }
-
                 }
             }
 
             return secretImageBytes;
-
         }
 
-        public static byte[] EncryptImage(byte[] secretImageBytes, int originalImageWidth, int originalImageHeight, int secretImageWidth, int secretImageHeight)
+        public static byte[] EncryptImage(byte[] secretImageBytes, int originalImageWidth, int originalImageHeight,
+            int secretImageWidth, int secretImageHeight)
         {
-            var expandedSecretImage = ImageUtilities.ExpandSecretImage(secretImageBytes, originalImageWidth, originalImageHeight,
+            var expandedSecretImage = ImageUtilities.ExpandSecretImage(secretImageBytes, originalImageWidth,
+                originalImageHeight,
                 secretImageWidth, secretImageHeight);
 
             return ImageUtilities.SwitchImageHalves(expandedSecretImage);
@@ -108,9 +116,12 @@ namespace GroupHStegafy.Model
             {
                 result[i] = (aByte & (1 << i)) != 0;
             }
+
             Array.Reverse(result);
 
             return result;
         }
+
+        #endregion
     }
 }

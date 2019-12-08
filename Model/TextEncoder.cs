@@ -10,10 +10,16 @@ namespace GroupHStegafy.Model
     /// </summary>
     public class TextEncoder
     {
+        #region Data members
+
         private readonly int bitsPerColorChannel;
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
-        ///     Initializes a new instance of the <see cref="TextEncoder"/> class.
+        ///     Initializes a new instance of the <see cref="TextEncoder" /> class.
         /// </summary>
         /// <param name="bitsPerColorChannel">The bits per color channel.</param>
         /// <exception cref="ArgumentException">Invalid BitsPerColorChannel</exception>
@@ -23,8 +29,13 @@ namespace GroupHStegafy.Model
             {
                 throw new ArgumentException("Invalid BitsPerColorChannel");
             }
+
             this.bitsPerColorChannel = bitsPerColorChannel;
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         ///     Encodes the message.
@@ -39,7 +50,7 @@ namespace GroupHStegafy.Model
             var stringDataBits = new Queue<bool>();
             foreach (var stringByte in stringDataBytes)
             {
-                foreach (var bit in convertByteToBoolArray(stringByte))
+                foreach (var bit in this.convertByteToBoolArray(stringByte))
                 {
                     stringDataBits.Enqueue(bit);
                 }
@@ -66,7 +77,6 @@ namespace GroupHStegafy.Model
             }
 
             throw new ArgumentException("Not enough image data in original image.");
-
         }
 
         /// <summary>
@@ -127,6 +137,7 @@ namespace GroupHStegafy.Model
             {
                 result[i] = (aByte & (1 << i)) != 0;
             }
+
             Array.Reverse(result);
 
             return result;
@@ -146,7 +157,7 @@ namespace GroupHStegafy.Model
             {
                 if (bit)
                 {
-                    result |= (byte)(1 << (7 - index));
+                    result |= (byte) (1 << (7 - index));
                 }
 
                 index++;
@@ -168,5 +179,7 @@ namespace GroupHStegafy.Model
 
             return decryptedMessage;
         }
+
+        #endregion
     }
 }

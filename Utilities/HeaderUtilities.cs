@@ -11,8 +11,10 @@ namespace GroupHStegafy.Utilities
     /// </summary>
     public static class HeaderUtilities
     {
+        #region Methods
+
         /// <summary>
-        /// Adds the image header.
+        ///     Adds the image header.
         /// </summary>
         /// <param name="imageData">The image data.</param>
         /// <param name="imageWidth">Width of the image.</param>
@@ -21,7 +23,8 @@ namespace GroupHStegafy.Utilities
         /// <param name="messageType">Type of the message.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException">imageWidth - must be at least 1</exception>
-        public static byte[] AddHeader(byte[] imageData, int imageWidth, bool isEncrypted, int bpcc, MessageType messageType)
+        public static byte[] AddHeader(byte[] imageData, int imageWidth, bool isEncrypted, int bpcc,
+            MessageType messageType)
         {
             if (imageWidth < 1)
             {
@@ -31,7 +34,7 @@ namespace GroupHStegafy.Utilities
             ImageUtilities.ChangePixelColor(imageData, 0, 0, imageWidth, Color.FromArgb(212, 212, 212));
 
             var offset = ImageUtilities.CalculateByteOffset(1, 0, imageWidth);
-            imageData[offset + ImageUtilities.PixelColorByteOffset(PixelColor.Green)] = (byte)bpcc;
+            imageData[offset + ImageUtilities.PixelColorByteOffset(PixelColor.Green)] = (byte) bpcc;
 
             var secondPixelRedByte = ImageUtilities.GetByteForColor(imageData, 1, 0, imageWidth, PixelColor.Red);
             var secondPixelBlueByte = ImageUtilities.GetByteForColor(imageData, 1, 0, imageWidth, PixelColor.Blue);
@@ -61,12 +64,12 @@ namespace GroupHStegafy.Utilities
         }
 
         /// <summary>
-        /// Determines whether the specified image data is encrypted.
+        ///     Determines whether the specified image data is encrypted.
         /// </summary>
         /// <param name="imageData">The image data.</param>
         /// <param name="width">The image width.</param>
         /// <returns>
-        ///   <c>true</c> if the specified image data is encrypted; otherwise, <c>false</c>.
+        ///     <c>true</c> if the specified image data is encrypted; otherwise, <c>false</c>.
         /// </returns>
         /// <exception cref="ArgumentOutOfRangeException">width - must be at least 1</exception>
         public static bool IsEncrypted(byte[] imageData, int width)
@@ -83,7 +86,7 @@ namespace GroupHStegafy.Utilities
         }
 
         /// <summary>
-        /// Gets the type of the embedded message.
+        ///     Gets the type of the embedded message.
         /// </summary>
         /// <param name="imageData">The image data.</param>
         /// <param name="width">The image width.</param>
@@ -103,12 +106,12 @@ namespace GroupHStegafy.Utilities
         }
 
         /// <summary>
-        /// Determines whether a message is embedded
+        ///     Determines whether a message is embedded
         /// </summary>
         /// <param name="imageData">The image data.</param>
         /// <param name="width">The image width.</param>
         /// <returns>
-        ///   <c>true</c> if message is embedded; otherwise, <c>false</c>.
+        ///     <c>true</c> if message is embedded; otherwise, <c>false</c>.
         /// </returns>
         /// <exception cref="ArgumentOutOfRangeException">width - must be at least 1</exception>
         public static bool IsMessageEmbedded(byte[] imageData, int width)
@@ -123,11 +126,11 @@ namespace GroupHStegafy.Utilities
         }
 
         /// <summary>
-        /// Determines whether a file is an image file that can be used for Steganography
+        ///     Determines whether a file is an image file that can be used for Steganography
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns>
-        ///   <c>true</c> if [is image file] [the specified file]; otherwise, <c>false</c>.
+        ///     <c>true</c> if [is image file] [the specified file]; otherwise, <c>false</c>.
         /// </returns>
         public static async Task<bool> IsImageFile(StorageFile file)
         {
@@ -139,11 +142,12 @@ namespace GroupHStegafy.Utilities
             {
                 return false;
             }
+
             return true;
         }
 
         /// <summary>
-        /// Gets the bits per color channel.
+        ///     Gets the bits per color channel.
         /// </summary>
         /// <param name="imageData">The image data.</param>
         /// <param name="width">The image width.</param>
@@ -159,19 +163,22 @@ namespace GroupHStegafy.Utilities
             var offset = ImageUtilities.CalculateByteOffset(1, 0, width);
             return imageData[offset + ImageUtilities.PixelColorByteOffset(PixelColor.Green)];
         }
+
+        #endregion
     }
 
     /// <summary>
-    /// Embedded message types
+    ///     Embedded message types
     /// </summary>
     public enum MessageType
     {
         /// <summary>
-        /// Text message type
+        ///     Text message type
         /// </summary>
         Text,
+
         /// <summary>
-        /// Monochrome BMP message type
+        ///     Monochrome BMP message type
         /// </summary>
         MonochromeBmp
     }
