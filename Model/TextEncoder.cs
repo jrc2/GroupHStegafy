@@ -81,7 +81,7 @@ namespace GroupHStegafy.Model
 
             var charBits = new bool[8];
             var bitCount = 0;
-            for (var i = 8; i < modifiedImageBytes.Length; i+=ImageUtilities.BytesPerPixel)
+            for (var i = 8; i < modifiedImageBytes.Length; i += ImageUtilities.BytesPerPixel)
             {
                 for (var j = 2; j >= 0; j--)
                 {
@@ -117,7 +117,7 @@ namespace GroupHStegafy.Model
             }
 
             return insignificantBits;
-        } 
+        }
 
         private bool[] convertByteToBoolArray(byte aByte)
         {
@@ -137,7 +137,7 @@ namespace GroupHStegafy.Model
             if (boolArray.Length != 8)
             {
                 throw new ArgumentException("Invalid byte data.");
-            } 
+            }
 
             byte result = 0;
             var index = 0;
@@ -157,16 +157,14 @@ namespace GroupHStegafy.Model
 
         public static string EncryptMessage(string key, string message)
         {
-            var expandedKey = TextUtilities.ExpandKey(message.Length, key);
-            var encryptedMessage = TextUtilities.EncryptText(message, expandedKey);
+            var encryptedMessage = TextUtilities.EncryptText(message, key);
 
             return encryptedMessage;
         }
 
-        public static string DecryptMessage(string key, string encryptedMessage)
+        public static string DecryptMessage(string encryptedMessage)
         {
-            var expandedKey = TextUtilities.ExpandKey(encryptedMessage.Length, key);
-            var decryptedMessage = TextUtilities.DecryptText(encryptedMessage, expandedKey);
+            var decryptedMessage = TextUtilities.DecryptText(encryptedMessage);
 
             return decryptedMessage;
         }

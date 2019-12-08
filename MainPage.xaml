@@ -28,17 +28,17 @@
         <Button x:Name="openSecretFileButton" Content="Open Secret File" Margin="19,99,0,0" VerticalAlignment="Top" Click="openSecretFileButton_Click" RenderTransformOrigin="0.137,-1.236" IsEnabled="False"/>
         <Button x:Name="embedSecretMessageButton" Content="Embed Message" Margin="19,150,0,0" VerticalAlignment="Top" IsEnabled="False" Click="embedSecretMessageButton_Click"/>
         <Button x:Name="openModifiedImageButton" Content="Open Modified Image" Margin="20,244,0,0" VerticalAlignment="Top" Click="openModifiedImageButton_Click" RenderTransformOrigin="0.137,-1.236"/>
-        <Button x:Name="saveButton" Content="Save" Margin="20,536,0,0" VerticalAlignment="Top" Click="saveButton_Click" IsEnabled="False"/>
+        <Button x:Name="saveButton" Content="Save" Margin="20,371,0,0" VerticalAlignment="Top" Click="saveButton_Click" IsEnabled="False"/>
         <TextBlock x:Name="errorTextBlock" HorizontalAlignment="Left" Margin="197,10,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="564" FontWeight="Bold" Foreground="Red"/>
         <TextBlock HorizontalAlignment="Left" Margin="277,302,0,0" Text="Original Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="564,306,0,0" Text="Unencrypted Secret" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="576,635,0,0" Text="Modified Image" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <CheckBox x:Name="encryptCheckbox" Content="Encrypt" Margin="25,573,0,0" VerticalAlignment="Top" IsEnabled="False" Checked="encryptCheckbox_OnChecked" Unchecked="encryptCheckbox_OnUnchecked"/>
+        <CheckBox x:Name="encryptCheckbox" Content="Encrypt" Margin="22,408,0,0" VerticalAlignment="Top" IsEnabled="False" Checked="encryptCheckbox_OnChecked" Unchecked="encryptCheckbox_OnUnchecked"/>
         <TextBox x:Name="bitsPerColorChannelTextBox" HorizontalAlignment="Left" Margin="64,193,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="77" IsEnabled="False"/>
         <TextBlock HorizontalAlignment="Left" Margin="22,201,0,0" Text="BPCC:" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <Button x:Name="reloadButton" Content="Reload" Margin="113,536,0,0" VerticalAlignment="Top" Click="reloadButton_Click"/>
+        <Button x:Name="reloadButton" Content="Reload" Margin="113,371,0,0" VerticalAlignment="Top" Click="reloadButton_Click"/>
         <TextBlock HorizontalAlignment="Left" Margin="270,635,0,0" Text="Encrypted Secret" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBox x:Name="cipherWordTextBox" HorizontalAlignment="Left" Margin="25,634,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="151" Visibility="Collapsed"/>
-        <TextBlock x:Name="cipherWordTextBlock" HorizontalAlignment="Left" Margin="25,610,0,0" Text="Cipher Word:" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Collapsed"/>
+        <TextBox x:Name="cipherWordTextBox" HorizontalAlignment="Left" Margin="22,480,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="151" Visibility="Collapsed"/>
+        <TextBlock x:Name="cipherWordTextBlock" HorizontalAlignment="Left" Margin="22,454,0,0" Text="Cipher Word:" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Collapsed"/>
     </Grid>
 </Page>

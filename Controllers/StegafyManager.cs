@@ -166,7 +166,7 @@ namespace GroupHStegafy.Controllers
         /// <summary>
         ///     Embeds the secret text message.
         /// </summary>
-        public async Task EmbedSecretMessage(int bitsPerColorChannel)
+        public async Task EmbedSecretMessage(int bitsPerColorChannel, bool encrypt)
         {
             var originalImageData = await ImageUtilities.GetImageData(this.OriginalImage);
 
@@ -174,7 +174,7 @@ namespace GroupHStegafy.Controllers
 
             var modifiedImageData = textEncoder.EncodeMessage(originalImageData, this.SecretMessage);
 
-            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, false, bitsPerColorChannel,
+            modifiedImageData = HeaderUtilities.AddHeader(modifiedImageData, this.OriginalImage.PixelWidth, encrypt, bitsPerColorChannel,
                 MessageType.Text);
 
             this.ModifiedImage = new WriteableBitmap(this.OriginalImage.PixelWidth, this.OriginalImage.PixelHeight);
@@ -239,22 +239,20 @@ namespace GroupHStegafy.Controllers
                 return;
             }
 
-            //TODO is passing in message ideal?
             this.SecretMessage = TextEncoder.EncryptMessage(cipher, message);
         }
 
         /// <summary>
         ///     Decrypts the secret message.
         /// </summary>
-        public void DecryptSecretMessage(string key)
+        public void DecryptSecretMessage()
         {
             if (this.SecretMessage == null)
             {
                 return;
             }
 
-            //TODO make sure this works
-            this.SecretMessage = TextEncoder.DecryptMessage(key, this.SecretMessage);
+            this.SecretMessage = TextEncoder.DecryptMessage(this.SecretMessage);
         }
 
         /// <summary>
